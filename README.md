@@ -46,10 +46,10 @@ Simple ...
 
 `How to attach a logo ?`
 
-```plain		
-				#Use the constant LOGO		
-				LOGO=1    
-```				
+```plain    
+        #Use the constant LOGO    
+        LOGO=1    
+```       
 
 Easy ...
 
