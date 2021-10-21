@@ -42,7 +42,14 @@ Simple ...
         #add_file_to_mail "/Full Path of my file" "Name of displayed file on the email"
         add_file_to_mail "/tmp/example.txt" "example.txt"
         
-```       
+```   
+
+`How to attach a logo ?`
+
+```plain		
+				#Use the constant LOGO		
+				LOGO=1    
+```				
 
 Easy ...
 
