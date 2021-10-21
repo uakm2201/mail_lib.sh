@@ -12,7 +12,7 @@
 #
 #       Usage:
 #
-#               exec_sql.sh [-h | --help] -o database_name -s SQL -k mail [-t title] [-n] [-i] [-p] [-m] [-d] text [-e]
+#               
 #
 #       Options:
 #
@@ -45,6 +45,7 @@
         KEEP_MAIL=0
         HTML_TITLE=""
         REGEX_TAG_EMAIL='^<!--.*\bEMAIL TAG\b.*-->'
+        DEBUG_EMAIL_TABLE=0 #Put to 1 if you would like to have a border on each table of your email.
 
 
 function check_bin
@@ -358,7 +359,7 @@ function mime_attach_file
 {
 
 #       -----------------------------------------------------------------------
-#       Function to on the mime header an image (OK, NOTOK, WARNING, and LOGO)
+#       Function to add on the mime header a file.
 #       Argument : None
 #
 #       -----------------------------------------------------------------------
@@ -378,55 +379,68 @@ function mime_attach_file
 }
 
 function mime_html_header
-{ 
-    
+{
+	
+#       -----------------------------------------------------------------------
+#       Function to define on the mime header the html part
+#       Argument : None
+#
+#       -----------------------------------------------------------------------
       
-    MSG="${MSG}--$BOUNDARY${NL}"
-    MSG="${MSG}Content-Type: text/html${NL}"
-    MSG="${MSG}Content-Transfer-Encoding: 7bit${NL}"
-    MSG="${MSG}${NL}"
-    MSG="${MSG}<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">${NL}"
-    MSG="${MSG}${NL}"
-    MSG="${MSG}<html xmlns=\"http://www.w3.org/1999/xhtml\">${NL}"
-    MSG="${MSG}${NL}"
-    MSG="${MSG}<head>${NL}"
-    INT_COUNT=`count_specific_section title`
-    if [ "${INT_COUNT}" = "1" ]; then
-        HTML_TITLE=`unique_match_specific_section title`
-        MSG="${MSG}<title>${HTML_TITLE}</title>${NL}"
-    fi
-    MSG="${MSG}${NL}"
-  
+        MSG="${MSG}--$BOUNDARY${NL}"
+        MSG="${MSG}Content-Type: text/html${NL}"
+        MSG="${MSG}Content-Transfer-Encoding: 7bit${NL}"
+        MSG="${MSG}${NL}"
+        MSG="${MSG}<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">${NL}"
+        MSG="${MSG}${NL}"
+        MSG="${MSG}<html xmlns=\"http://www.w3.org/1999/xhtml\">${NL}"
+        MSG="${MSG}${NL}"
+        MSG="${MSG}<head>${NL}"
+        INT_COUNT=`count_specific_section title`
+        if [ "${INT_COUNT}" = "1" ]; then
+            HTML_TITLE=`unique_match_specific_section title`
+            MSG="${MSG}<title>${HTML_TITLE}</title>${NL}"
+        fi
+        MSG="${MSG}${NL}" 
 }   
 
 function html_style
 {
+	
+#       -----------------------------------------------------------------------
+#       Function to add the html style on the html body.
+#       Argument : None
+#
+#       -----------------------------------------------------------------------
+
   
   
-    MSG="${MSG}<style type=\"text/css\">${NL}"
-    MSG="${MSG}body {margin: 0; padding: 0; min-width: 100%!important;}${NL}"
-    MSG="${MSG}body[yahoo] .class {}${NL}"
-    MSG="${MSG}.content {width: 100%; max-width: 600px;}${NL}"  
-    MSG="${MSG}.header {padding: 40px 30px 20px 30px;}${NL}"
-    MSG="${MSG}.col425 {width: 425px!important;}${NL}"
-    MSG="${MSG}.col380 {width: 380px!important;}${NL}"
-    MSG="${MSG}.subhead {font-size: 15px; font-weight: bold; color: ${HTLM_HEAD_FONT_COLOR}; font-family: sans-serif; text-align: right; }${NL}"
-    
-    #DEBUG
-    #MSG="${MSG}TABLE{border-style:solid;border-width:1px;border-color:#996;border-collapse:collapse;border-spacing:0;empty-cells:show}${NL}"
-    
-    MSG="${MSG}.innerpadding {padding: 30px 30px 30px 30px;}${NL}"
-    MSG="${MSG}.borderbottom {border-bottom: 1px solid #f2eeed;}${NL}"
-    MSG="${MSG}.h2 {padding: 0 0 15px 0; font-size: 20px; line-height: 24px; color: ${HTLM_HEAD_FONT_COLOR};font-weight: bold;}${NL}"
-    MSG="${MSG}.bodycopy {font-size: 16px; line-height: 22px;}${NL}"
-    MSG="${MSG}@media only screen and (min-device-width: 601px) {${NL}"
-    MSG="${MSG}.content {width: 600px !important;}${NL}"
-    
-    MSG="${MSG}}${NL}"
-    MSG="${MSG}</style>${NL}"
-    MSG="${MSG}${NL}"
-    MSG="${MSG}</head>${NL}"
-    MSG="${MSG}${NL}"
+        MSG="${MSG}<style type=\"text/css\">${NL}"
+        MSG="${MSG}body {margin: 0; padding: 0; min-width: 100%!important;}${NL}"
+        MSG="${MSG}body[yahoo] .class {}${NL}"
+        MSG="${MSG}.content {width: 100%; max-width: 600px;}${NL}"  
+        MSG="${MSG}.header {padding: 40px 30px 20px 30px;}${NL}"
+        MSG="${MSG}.col425 {width: 425px!important;}${NL}"
+        MSG="${MSG}.col380 {width: 380px!important;}${NL}"
+        MSG="${MSG}.subhead {font-size: 15px; font-weight: bold; color: ${HTLM_HEAD_FONT_COLOR}; font-family: sans-serif; text-align: right; }${NL}"
+        
+        #DEBUG
+        if [ "${DEBUG_EMAIL_TABLE}" = "1" ]; then
+        	MSG="${MSG}TABLE{border-style:solid;border-width:1px;border-color:#996;border-collapse:collapse;border-spacing:0;empty-cells:show}${NL}"
+        fi
+        
+        MSG="${MSG}.innerpadding {padding: 30px 30px 30px 30px;}${NL}"
+        MSG="${MSG}.borderbottom {border-bottom: 1px solid #f2eeed;}${NL}"
+        MSG="${MSG}.h2 {padding: 0 0 15px 0; font-size: 20px; line-height: 24px; color: ${HTLM_HEAD_FONT_COLOR};font-weight: bold;}${NL}"
+        MSG="${MSG}.bodycopy {font-size: 16px; line-height: 22px;}${NL}"
+        MSG="${MSG}@media only screen and (min-device-width: 601px) {${NL}"
+        MSG="${MSG}.content {width: 600px !important;}${NL}"
+        
+        MSG="${MSG}}${NL}"
+        MSG="${MSG}</style>${NL}"
+        MSG="${MSG}${NL}"
+        MSG="${MSG}</head>${NL}"
+        MSG="${MSG}${NL}"
 
 }
 
@@ -680,106 +694,7 @@ function add_info_to_mail
   done
 }   
 
-#function add_info_to_mail
-#{
-#
-##       -----------------------------------------------------------------------
-##       Function for adding a file or a string on the HTML_MESSAGE
-##       Arguments
-##          1 : String to add on the html_message
-##         2 : Add a status 0:NOTOK, 1:OK, 2:Warning
-##       -----------------------------------------------------------------------
-#
-#  TEMP_TEMP=$(mktemp  "${TEMP_DIR}/${PROGNAME}.$$.XXXXXX")
-#  if [ "$TEMP_TEMP" = "" ]; then
-#    error_exit "cannot create temp file!"
-#  fi
-#  printf "$HTML_MESSAGE\n\n" >> ${TEMP_TEMP}
-#  ICON=""
-#  case $2 in
-#   "0")  ICON="<img src='cid:notok'>";
-#   ;;
-#   "1")  ICON="<img src='cid:ok'>"
-#   ;;
-#   "2")  ICON="<img src='cid:warning'>"
-#   ;;
-#  esac
-#  if [ "$ICON" != "" ]; then
-#   if [ -f "$1" ] ; then
-#     printf "<tr><td class=\"bodycopy\">\n" >> ${TEMP_TEMP}
-#     cat $1 >> ${TEMP_TEMP}
-#     printf "</td><td align='center' width=20>$ICON</td></tr>\n" >> ${TEMP_TEMP}
-#   else
-#     OLD_LC_COLLATE=$LC_COLLATE
-#      LC_COLLATE=C
-#      INT_STRING=`echo $1 | sed -e 's/[^a-zA-Z0-9,._+@%/-]/\\&/g; 1{$s/^$/""/}; 1!s/^/"/; $!s/$/"/'`
-#     LC_ALL=$OLD_LC_COLLATE
-#     printf "<tr><td class=\"bodycopy\">$1</td><td align='center' width=20>" >> ${TEMP_TEMP} 
-#     printf "$ICON</td></tr>\n" >> ${TEMP_TEMP}
-#   fi
-#   HTML_MESSAGE=`cat ${TEMP_TEMP}` 
-#  else
-#   if [ -f "$1" ] ; then
-#    printf "<tr><td class=\"bodycopy\">\n" >> ${TEMP_TEMP}
-#    cat $1 >> ${TEMP_TEMP}
-#    printf "</td></tr>\n" >> ${TEMP_TEMP}
-#   else
-#    printf "<tr><td class=\"bodycopy\">$1</td></tr>\n" >> ${TEMP_TEMP}
-#   fi
-#   HTML_MESSAGE=`cat ${TEMP_TEMP}`
-#  fi
-#  #echo $HTML_MESSAGE
-#  rm -f ${TEMP_TEMP}
-#  
-#}
-
-#function add_info_to_html_pre
-#{
-#
-##       -----------------------------------------------------------------------
-##       Function for adding a file or a string on the HTML_MESSAGE
-##       Arguments
-##          1 : String to add on the html_message
-##         2 : Add a status 0:NOTOK, 1:OK, 2:Warning
-##       -----------------------------------------------------------------------
-#
-#  TEMP_TEMP=$(mktemp  "${TEMP_DIR}/${PROGNAME}.$$.XXXXXX")
-#  if [ "$TEMP_TEMP" = "" ]; then
-#    error_exit "cannot create temp file!"
-#  fi
-#  if [ "$HTML_MESSAGE" = "" ]; then
-#   echo "<!-- BODY -->" >> ${TEMP_TEMP}
-# fi
-#  echo $HTML_MESSAGE >> ${TEMP_TEMP}
-#  case $2 in
-#   "0")  ICON="<img src='cid:notok'>";;
-#   "1")  ICON="<img src='cid:ok'>";;
-#   "2")  ICON="<img src='cid:warning'>";;
-#   *)    ICON="";;
-#  esac
-#  if [ "$ICON" != "" ]; then
-#   if [ -f "$1" ] ; then
-#     echo "<tr><td class=\"bodycopy\"><pre>\n" >> ${TEMP_TEMP}
-#     cat $1 >> ${TEMP_TEMP}
-#     echo "</pre></td><td align='center'>$ICON</td></tr>" >> ${TEMP_TEMP}
-#   else
-#     echo "<tr><td class=\"bodycopy\"><pre>$1</pre></td><td align='center'>$ICON</td></tr>" >> ${TEMP_TEMP}
-#   fi
-#   HTML_MESSAGE=`cat ${TEMP_TEMP}` 
-#  else
-#   if [ -f "$1" ] ; then
-#    echo "<tr><td class=\"bodycopy\"><pre>" >> ${TEMP_TEMP}
-#    cat $1 >> ${TEMP_TEMP}
-#    echo "</pre></td></tr>" >> ${TEMP_TEMP}
-#   else
-#    echo "<tr><td class=\"bodycopy\"><pre>$1</pre></td></tr>" >> ${TEMP_TEMP}
-#   fi
-#   HTML_MESSAGE=`cat ${TEMP_TEMP}`
-#  fi
-#  rm -f ${TEMP_TEMP}
-#  
-#}   
-
+   
 
 function manage_keep_email
 {
@@ -931,43 +846,6 @@ function sort_section_type_html
 
 
 
-
-#function html_email
-#{
-# 
-# 
-#   if [ -f "${KEEP_MAIL_FILE}" ]; then
-#     SIZE_FILE=`ls -l "${KEEP_MAIL_FILE}" | awk {'print $5'}`
-#     SIZE_FILE=`expr $SIZE_FILE + 0`
-#   else
-#     SIZE_FILE="0"
-#   fi
-#   if [ "${KEEP_MAIL}" != "1" ]; then
-#     mime_header
-#     mime_add_icon
-#    fi
-#    manage_keep_email
-#    mime_attach_file
-#    mime_html_header
-#    html_style
-#    html_table_header
-#    html_body_header
-#    html_body
-#    if [ "${KEEP_MAIL}" != "1" ]; then
-#     html_table_footer
-#      mime_html_footer
-#      printf '%s' "$MSG" | sed 's/BOUNDARY_KEEP/'${BOUNDARY}'/g'  | ${BIN_SENDMAIL} -t
-#      printf '%s' "$MSG" | sed 's/BOUNDARY_KEEP/'${BOUNDARY}'/g'> /tmp/tmp.txt
-#      HTML_MESSAGE=""
-#    else
-#       printf '%s' "$MSG" > ${KEEP_MAIL_FILE}
-#       HTML_MESSAGE=""
-#    fi
-#   
-#    
-#
-#}
-
 function add_file_to_temp
 {
     if [ "${TEMP_ADD_FILE}" != "" ]; then
@@ -1038,7 +916,6 @@ function html_email
       html_body_header
       html_body
       printf '%s' "${MSG}" | sendmail -t
-      printf '%s' "${MSG}" > /tmp/tmp.txt
       rm -f ${INT_EMAIL_TMP}
     fi
     
