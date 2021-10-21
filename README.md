@@ -32,9 +32,10 @@ Simple ...
         html_email
 ```
 
+
 `How to attach a file ? `
 
-      Before the html_email instruction, add this line :
+      Before the html_email instruction, add this line:
       
 ```plain
 

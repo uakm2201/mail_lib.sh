@@ -42,9 +42,9 @@
         HTML_BODY_BG_COLOR="#ffffff"
         
         
-        KEEP_MAIL=0       #Constant used to keep the mail as a file (Value=1) or not (Value=0)
-        LOGO=0            #Constant used to add a logo (Value=1) or not (Value=0)
-        DEBUG_EMAIL_TABLE=0 #Put to 1 if you would like to have a border on each table of your email.
+        KEEP_MAIL=0               #Constant used to keep the mail as a file (Value=1) or not (Value=0)
+        LOGO=0                    #Constant used to add a logo (Value=1) or not (Value=0)
+        DEBUG_EMAIL_TABLE=0       #Put to 1 if you would like to have a border on each table of your email.
         
 #       -------------------------------------------------------------------
 #       Constants used by the library. Don't change it.
@@ -53,8 +53,8 @@
         REGEX_TAG_EMAIL='^<!--.*\bEMAIL TAG\b.*-->'
         HTML_TITLE=""
         
-				
-				
+        
+        
 function check_bin
 {
   
@@ -387,9 +387,9 @@ function mime_attach_file
 
 function mime_html_header
 {
-	
+  
 #       -----------------------------------------------------------------------
-#       Function to define on the mime header the html part
+#       Function to define on the mime header the html body part.
 #       Argument : None
 #
 #       -----------------------------------------------------------------------
@@ -413,7 +413,7 @@ function mime_html_header
 
 function html_style
 {
-	
+  
 #       -----------------------------------------------------------------------
 #       Function to add the html style on the html body.
 #       Argument : None
@@ -431,7 +431,7 @@ function html_style
         
         #DEBUG
         if [ "${DEBUG_EMAIL_TABLE}" = "1" ]; then
-        	MSG="${MSG}TABLE{border-style:solid;border-width:1px;border-color:#996;border-collapse:collapse;border-spacing:0;empty-cells:show}${NL}"
+          MSG="${MSG}TABLE{border-style:solid;border-width:1px;border-color:#996;border-collapse:collapse;border-spacing:0;empty-cells:show}${NL}"
         fi
         
         MSG="${MSG}.innerpadding {padding: 30px 30px 30px 30px;}${NL}"
@@ -452,63 +452,74 @@ function html_style
 function html_table_header
 {
   
-    MSG="${MSG}<body yahoo bgcolor=\"${HTML_BG_COLOR}\">${NL}"
-    MSG="${MSG}<table width='100%' bgcolor='${HTML_BG_COLOR}' border='0' cellpadding='0' cellspacing='0'>${NL}"
-    MSG="${MSG}<tr>${NL}"
-    MSG="${MSG}<td>${NL}"
-    MSG="${MSG}<!--[if (gte mso 9)|(IE)]>${NL}"
-    MSG="${MSG}    <table width=\"600\" align=\"center\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">${NL}"
-    MSG="${MSG}<tr>${NL}"
-    MSG="${MSG}<td>${NL}"
-    MSG="${MSG}<![endif]-->${NL}"
-    MSG="${MSG}<table class=\"content\" align=\"center\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">${NL}"
-    MSG="${MSG}<tr>${NL}"
-    MSG="${MSG}${NL}"
+#       -----------------------------------------------------------------------
+#       Function to define the main table on the html email part.
+#       Argument : None
+#
+#       ----------------------------------------------------------------------- 
   
+        MSG="${MSG}<body yahoo bgcolor=\"${HTML_BG_COLOR}\">${NL}"
+        MSG="${MSG}<table width='100%' bgcolor='${HTML_BG_COLOR}' border='0' cellpadding='0' cellspacing='0'>${NL}"
+        MSG="${MSG}<tr>${NL}"
+        MSG="${MSG}<td>${NL}"
+        MSG="${MSG}<!--[if (gte mso 9)|(IE)]>${NL}"
+        MSG="${MSG}    <table width=\"600\" align=\"center\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">${NL}"
+        MSG="${MSG}<tr>${NL}"
+        MSG="${MSG}<td>${NL}"
+        MSG="${MSG}<![endif]-->${NL}"
+        MSG="${MSG}<table class=\"content\" align=\"center\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">${NL}"
+        MSG="${MSG}<tr>${NL}"
+        MSG="${MSG}${NL}"
 }
 
 function html_body_header
 {
+  
+  
+#       -----------------------------------------------------------------------
+#       Function to define the header of the email (Title and Logo).
+#       Argument : None
+#
+#       -----------------------------------------------------------------------   
 
-   if [ "${LOGO}" = "1" ]; then
-      INT_LOGO="<img src='cid:logo' width=\"70\" height=\"70\" border=\"0\" alt=\"\" / >"
-   else
-      INT_LOGO="&nbsp;" 
-   fi
-   INT_BODY_HEADER="
-   <td class=\"header\" bgcolor=\"${HTML_HEAD_BG_COLOR}\">
-   
-   <table width=\"70\" align=\"left\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">
-       <tr>
-           <td height=\"70\" style=\"padding: 0 0 0 0;\">
-               ${INT_LOGO}
-           </td>
-       </tr>
-   </table> 
-   </td>
-   <td class=\"header\" bgcolor=\"${HTML_HEAD_BG_COLOR}\">
-   <!--[if (gte mso 9)|(IE)]>
-   <table width=\"425\" align=\"right\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">
-       <tr>
-           <td height=\"70\">
-           <![endif]-->
-               <table class=\"col425\" align=\"right\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"width: 100%; max-width: 425px;\">
-                   <tr>
-                       <td height=\"70\">
-                       </td>
-                       <td class=\"subhead\">
-                        Unix System $HOSTNAME.
-                       </td>
-                   </tr>
-               </table>
-           <!--[if (gte mso 9)|(IE)]>
-           </td>
-       </tr>
-   </table>
-   <![endif]-->
-   </table>"   
-   MSG="${MSG}${INT_BODY_HEADER}${NL}"
-
+        if [ "${LOGO}" = "1" ]; then
+           INT_LOGO="<img src='cid:logo' width=\"70\" height=\"70\" border=\"0\" alt=\"\" / >"
+        else
+           INT_LOGO="&nbsp;" 
+        fi
+        INT_BODY_HEADER="
+        <td class=\"header\" bgcolor=\"${HTML_HEAD_BG_COLOR}\">
+        
+        <table width=\"70\" align=\"left\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">
+            <tr>
+                <td height=\"70\" style=\"padding: 0 0 0 0;\">
+                    ${INT_LOGO}
+                </td>
+            </tr>
+        </table> 
+        </td>
+        <td class=\"header\" bgcolor=\"${HTML_HEAD_BG_COLOR}\">
+        <!--[if (gte mso 9)|(IE)]>
+        <table width=\"425\" align=\"right\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">
+            <tr>
+                <td height=\"70\">
+                <![endif]-->
+                    <table class=\"col425\" align=\"right\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"width: 100%; max-width: 425px;\">
+                        <tr>
+                            <td height=\"70\">
+                            </td>
+                            <td class=\"subhead\">
+                             Unix System $HOSTNAME.
+                            </td>
+                        </tr>
+                    </table>
+                <!--[if (gte mso 9)|(IE)]>
+                </td>
+            </tr>
+        </table>
+        <![endif]-->
+        </table>"   
+        MSG="${MSG}${INT_BODY_HEADER}${NL}"
 }
 
 function html_body
@@ -649,54 +660,91 @@ function add_info_to_html_pre
 function add_info_to_mail
 {
   
-  HTML_MESSAGE=""
-  for i in `echo "${INT_HTML_MAIL}"`
-  do
-    INT_START_LINE=`echo $i | awk -F"," {'print $1'}`
-    INT_END_LINE=`echo $i | awk -F"," {'print $2'}`
-    INT_SP_MAIL_SECTION=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
-    INT_TYPE_SECTION=`echo "${INT_SP_MAIL_SECTION}" | head -n1 | awk  {'for(i=1; i<=NF; i++) {if( $i ~ /type/) print $i}'} | awk -F":" {'print $2'}`
-    INT_TYPE_IMG=`echo "${INT_SP_MAIL_SECTION}" | head -n1 | awk  {'for(i=1; i<=NF; i++) {if( $i ~ /img/) print $i}'} | awk -F":" {'print $2'}`
-    INT_START_LINE=$((INT_START_LINE+1))
-    INT_SP_FOUND=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
-    if [ "${INT_TYPE_SECTION}" = "html" ]; then 
-      if [ "${INT_TYPE_IMG}" != "" ]; then
-          case ${INT_TYPE_IMG} in
-            "0")  ICON="<img src='cid:notok'>";
-            ;;
-            "1")  ICON="<img src='cid:ok'>"
-            ;;
-            "2")  ICON="<img src='cid:warning'>"
-            ;;
-          esac
-          HTML_MESSAGE="${HTML_MESSAGE}<tr><td class=\"bodycopy\">${NL}"
-          HTML_MESSAGE="${HTML_MESSAGE}${INT_SP_FOUND}${NL}"
-          HTML_MESSAGE="${HTML_MESSAGE}</td><td align='center' width=20>$ICON</td></tr>${NL}"
-      else
-          HTML_MESSAGE="${HTML_MESSAGE}<tr><td class=\"bodycopy\">${NL}"
-          HTML_MESSAGE="${HTML_MESSAGE}${INT_SP_FOUND}${NL}"
-          HTML_MESSAGE="${HTML_MESSAGE}</td></tr>${NL}"
-      fi
-    else
-      if [ "${INT_TYPE_IMG}" != "" ]; then
-          case ${INT_TYPE_IMG} in
-            "0")  ICON="<img src='cid:notok'>";
-            ;;
-            "1")  ICON="<img src='cid:ok'>"
-            ;;
-            "2")  ICON="<img src='cid:warning'>"
-            ;;
-          esac
-          HTML_MESSAGE="${HTML_MESSAGE}<tr><td class=\"bodycopy\"><pre>${NL}"
-          HTML_MESSAGE="${HTML_MESSAGE}${INT_SP_FOUND}${NL}"
-          HTML_MESSAGE="${HTML_MESSAGE}</pre></td><td align='center' width=20>$ICON</td></tr>${NL}"   
-      else
-          HTML_MESSAGE="${HTML_MESSAGE}<tr><td class=\"bodycopy\"><pre>${NL}"
-          HTML_MESSAGE="${HTML_MESSAGE}${INT_SP_FOUND}${NL}"
-          HTML_MESSAGE="${HTML_MESSAGE}</pre></td></tr>${NL}"
-      fi    
-    fi  
-  done
+        HTML_MESSAGE=""
+        for i in `echo "${INT_HTML_MAIL}"`
+        do
+          ICON=""
+          INT_START_LINE=`echo $i | awk -F"," {'print $1'}`
+          INT_END_LINE=`echo $i | awk -F"," {'print $2'}`
+          INT_SP_MAIL_SECTION=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
+          INT_TYPE_SECTION=`echo "${INT_SP_MAIL_SECTION}" | head -n1 | awk  {'for(i=1; i<=NF; i++) {if( $i ~ /type/) print $i}'} | awk -F":" {'print $2'}`
+          INT_TYPE_IMG=`echo "${INT_SP_MAIL_SECTION}" | head -n1 | awk  {'for(i=1; i<=NF; i++) {if( $i ~ /img/) print $i}'} | awk -F":" {'print $2'}`
+          INT_START_LINE=$((INT_START_LINE+1))
+          INT_SP_FOUND=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
+          
+          if [ "${INT_TYPE_IMG}" != "" ]; then
+            case ${INT_TYPE_IMG} in
+              "0")  ICON="<img src='cid:notok'>";
+              ;;
+              "1")  ICON="<img src='cid:ok'>"
+              ;;
+              "2")  ICON="<img src='cid:warning'>"
+              ;;
+            esac
+          fi
+          
+          HTML_MESSAGE="${HTML_MESSAGE}<tr><td class=\"bodycopy\">"
+          
+          if [ "${INT_TYPE_SECTION}" = "html_pre" ]; then
+                 HTML_MESSAGE="${HTML_MESSAGE}<pre>"
+          fi
+          
+          HTML_MESSAGE="${HTML_MESSAGE}${NL}"
+          HTML_MESSAGE="${HTML_MESSAGE}${INT_SP_FOUND}"
+          
+          if [ "${INT_TYPE_SECTION}" = "html_pre" ]; then
+                 HTML_MESSAGE="${HTML_MESSAGE}</pre>"
+          fi
+          
+          HTML_MESSAGE="${HTML_MESSAGE}${NL}"
+          HTML_MESSAGE="${HTML_MESSAGE}</td>"
+          
+          if [ "${ICON}" != "" ]; then
+            HTML_MESSAGE="${HTML_MESSAGE}<td align='center' width=20>$ICON</td>"
+          fi  
+          
+          HTML_MESSAGE="${HTML_MESSAGE}</tr>${NL}"  
+          
+          
+          
+          #if [ "${INT_TYPE_SECTION}" = "html" ]; then 
+          #  if [ "${INT_TYPE_IMG}" != "" ]; then
+          #      case ${INT_TYPE_IMG} in
+          #        "0")  ICON="<img src='cid:notok'>";
+          #        ;;
+          #        "1")  ICON="<img src='cid:ok'>"
+          #        ;;
+          #        "2")  ICON="<img src='cid:warning'>"
+          #        ;;
+          #      esac
+          #      HTML_MESSAGE="${HTML_MESSAGE}<tr><td class=\"bodycopy\">${NL}"
+          #      HTML_MESSAGE="${HTML_MESSAGE}${INT_SP_FOUND}${NL}"
+          #      HTML_MESSAGE="${HTML_MESSAGE}</td><td align='center' width=20>$ICON</td></tr>${NL}"
+          #  else
+          #      HTML_MESSAGE="${HTML_MESSAGE}<tr><td class=\"bodycopy\">${NL}"
+          #      HTML_MESSAGE="${HTML_MESSAGE}${INT_SP_FOUND}${NL}"
+          #      HTML_MESSAGE="${HTML_MESSAGE}</td></tr>${NL}"
+          #  fi
+          #else
+          #  if [ "${INT_TYPE_IMG}" != "" ]; then
+          #      case ${INT_TYPE_IMG} in
+          #        "0")  ICON="<img src='cid:notok'>";
+          #        ;;
+          #        "1")  ICON="<img src='cid:ok'>"
+          #        ;;
+          #        "2")  ICON="<img src='cid:warning'>"
+          #        ;;
+          #      esac
+          #      HTML_MESSAGE="${HTML_MESSAGE}<tr><td class=\"bodycopy\"><pre>${NL}"
+          #      HTML_MESSAGE="${HTML_MESSAGE}${INT_SP_FOUND}${NL}"
+          #      HTML_MESSAGE="${HTML_MESSAGE}</pre></td><td align='center' width=20>$ICON</td></tr>${NL}"   
+          #  else
+          #      HTML_MESSAGE="${HTML_MESSAGE}<tr><td class=\"bodycopy\"><pre>${NL}"
+          #      HTML_MESSAGE="${HTML_MESSAGE}${INT_SP_FOUND}${NL}"
+          #      HTML_MESSAGE="${HTML_MESSAGE}</pre></td></tr>${NL}"
+          #  fi    
+          #fi  
+        done
 }   
 
    
@@ -907,7 +955,6 @@ function html_email
     add_file_to_temp
     if [ "${KEEP_MAIL}" = "1" ]; then
       cat ${INT_EMAIL_TMP} >> "${KEEP_MAIL_FILE}"
-      rm -f ${INT_EMAIL_TMP}
     else
       search_section
       mime_header
@@ -921,8 +968,8 @@ function html_email
       html_body_header
       html_body
       printf '%s' "${MSG}" | sendmail -t
-      rm -f ${INT_EMAIL_TMP}
     fi
+    rm -f ${INT_EMAIL_TMP}
     
     
     
