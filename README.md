@@ -16,8 +16,8 @@ Simple ...
         OLD_LPATH=${LPATH}
         LPATH=/opt/admin/bin
         . $LPATH/../lib/mail_lib.sh
-	      LPATH=${OLD_LPATH}
-	      
+        LPATH=${OLD_LPATH}
+        
 # -------------------------------------------------------------------
 # Program starts here
 # -------------------------------------------------------------------
