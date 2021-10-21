@@ -42,17 +42,17 @@
         HTML_BODY_BG_COLOR="#ffffff"
         
         
-        KEEP_MAIL=0				#Constant used to keep the mail as a file (Value=1) or not (Value=0)
-        LOGO=0						#Constant used to add a logo (Value=1) or not (Value=0)
+        KEEP_MAIL=0       #Constant used to keep the mail as a file (Value=1) or not (Value=0)
+        LOGO=0            #Constant used to add a logo (Value=1) or not (Value=0)
         DEBUG_EMAIL_TABLE=0 #Put to 1 if you would like to have a border on each table of your email.
         
 #       -------------------------------------------------------------------
 #       Constants used by the library. Don't change it.
 #       -------------------------------------------------------------------        
 
-				REGEX_TAG_EMAIL='^<!--.*\bEMAIL TAG\b.*-->'
-				HTML_TITLE=""
-				
+        REGEX_TAG_EMAIL='^<!--.*\bEMAIL TAG\b.*-->'
+        HTML_TITLE=""
+        
 				
 				
 function check_bin
