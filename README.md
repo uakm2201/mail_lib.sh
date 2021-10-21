@@ -2,7 +2,7 @@
 This script is used every day to send a responsive html message from Production/Development Unix Systems.
 Regarding the responsive, I'm not an expert about HTML. But you could attach files, give a priority to your email ....
 
-`How to`
+`How to `
 
 Simple ...
 
@@ -31,6 +31,17 @@ Simple ...
         
         html_email
 ```
+
+`How to attach a file ?`
+
+      Before the html_email instruction, add this line :
+      
+```plain
+
+        #add_file_to_mail "/Full Path of my file" "Name of displayed file on the email"
+        add_file_to_mail "/tmp/example.txt" "example.txt"
+        
+```       
 
 Easy ...
 
