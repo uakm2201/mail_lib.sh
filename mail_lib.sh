@@ -168,9 +168,6 @@ function mime_add_icon
         OK=0
         NOTOK=0
         
-        STRING_OK=`echo $HTML_MESSAGE | grep cid:ok`       
-        STRING_NOTOK=`echo $HTML_MESSAGE | grep cid:notok`  
-        STRING_WARNING=`echo $HTML_MESSAGE | grep cid:warning`
         STRING_OK=`grep cid:ok ${INT_EMAIL_TMP} || grep '^<!--.*\bEMAIL TAG\b.*\bimg\b.*-->' ${INT_EMAIL_TMP} | awk '{ for (i=1;i<=NF;i++) { tmp=match($i,/img:1/); if (tmp) {print $(i)}}}' `
         STRING_NOTOK=`grep cid:notok ${INT_EMAIL_TMP} || grep '^<!--.*\bEMAIL TAG\b.*\bimg\b.*-->' ${INT_EMAIL_TMP} | awk '{ for (i=1;i<=NF;i++) { tmp=match($i,/img:0/); if (tmp) {print $(i)}}}' `  
         STRING_WARNING=`grep cid:warning ${INT_EMAIL_TMP} || grep '^<!--.*\bEMAIL TAG\b.*\bimg\b.*-->' ${INT_EMAIL_TMP} | awk '{ for (i=1;i<=NF;i++) { tmp=match($i,/img:2/); if (tmp) {print $(i)}}}' `
@@ -371,18 +368,18 @@ function mime_attach_file
 #
 #       -----------------------------------------------------------------------
 
-         for i in ${INT_MAIL_SECTION}
-         do
-           INT_START_LINE=`echo $i | awk -F"," {'print $1'}`
-           INT_END_LINE=`echo $i | awk -F"," {'print $2'}`
-           INT_SP_MAIL_SECTION=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
-           INT_TYPE_SECTION=`echo "${INT_SP_MAIL_SECTION}" | head -n1 | awk  {'for(i=1; i<=NF; i++) {if( $i ~ /type/) print $i}'} | awk -F":" {'print $2'}`
-           if [ "${INT_TYPE_SECTION}" = "attached_file" ]; then
-             INT_START_LINE=$((INT_START_LINE+1))
-             INT_SP_ATTACH=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP} | sed 's/BOUNDARY_KEEP/'${BOUNDARY}'/g'`
-             MSG="${MSG}${INT_SP_ATTACH}${NL}${NL}"
-           fi
-         done
+        for i in ${INT_MAIL_SECTION}
+        do
+          INT_START_LINE=`echo $i | awk -F"," {'print $1'}`
+          INT_END_LINE=`echo $i | awk -F"," {'print $2'}`
+          INT_SP_MAIL_SECTION=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
+          INT_TYPE_SECTION=`echo "${INT_SP_MAIL_SECTION}" | head -n1 | awk  {'for(i=1; i<=NF; i++) {if( $i ~ /type/) print $i}'} | awk -F":" {'print $2'}`
+          if [ "${INT_TYPE_SECTION}" = "attached_file" ]; then
+            INT_START_LINE=$((INT_START_LINE+1))
+            INT_SP_ATTACH=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP} | sed 's/BOUNDARY_KEEP/'${BOUNDARY}'/g'`
+            MSG="${MSG}${INT_SP_ATTACH}${NL}${NL}"
+          fi
+        done
 }
 
 function mime_html_header
@@ -524,141 +521,194 @@ function html_body_header
 
 function html_body
 {
-    if [ "${HTML_TITLE}" != "" ]; then
-      INT_HTML_TITLE="
-      <table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" >
-            <tr >
-                <td class=\"h2\">
-                    <!-- Start Title-->
-                    $HTML_TITLE
-                    <!-- End Title -->
-                </td>
-            </tr> 
-       </table>
-      "
-    else
-      INT_HTML_TITLE=""
-    fi    
-   INT_BODY="
-   <tr>
-    <td class=\"innerpadding borderbottom\" style=\"background-color: ${HTML_BODY_BG_COLOR};\">
-        ${INT_HTML_TITLE}
-        <table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" >     
-            <!--<tr>
-                <td class=\"bodycopy\"> -->
-                    ${HTML_MESSAGE}
-                <!--</td> -->
-                <!--<td><img src='cid:ok'></td> -->
-            <!--</tr> -->
-        </table>
-    </td>
-  </tr>"
-  MSG="${MSG}${INT_BODY}${NL}"
-  
-}   
 
+#       -----------------------------------------------------------------------
+#       Function to define the body of the email.
+#       Here, we add all text coming from the function add_info_to_html
+#       Argument : None
+#
+#       -----------------------------------------------------------------------   
+	
+        if [ "${HTML_TITLE}" != "" ]; then
+          INT_HTML_TITLE="
+          <table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" >
+                <tr >
+                    <td class=\"h2\">
+                        <!-- Start Title-->
+                        $HTML_TITLE
+                        <!-- End Title -->
+                    </td>
+                </tr> 
+           </table>
+          "
+        else
+          INT_HTML_TITLE=""
+        fi    
+        INT_BODY="
+        <tr>
+         <td class=\"innerpadding borderbottom\" style=\"background-color: ${HTML_BODY_BG_COLOR};\">
+             ${INT_HTML_TITLE}
+             <table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" >     
+                 <!--<tr>
+                     <td class=\"bodycopy\"> -->
+                         ${HTML_MESSAGE}
+                     <!--</td> -->
+                     <!--<td><img src='cid:ok'></td> -->
+                 <!--</tr> -->
+             </table>
+          </td>
+        </tr>"
+        MSG="${MSG}${INT_BODY}${NL}"
+}   
 
 function mime_html_footer
 {
-    MSG="${MSG}${NL}"
-    MSG="${MSG}--$BOUNDARY--"
+
+#       -----------------------------------------------------------------------
+#       Function to close the mime part of html.
+#       Argument : None
+#
+#       -----------------------------------------------------------------------   	
+
+        MSG="${MSG}${NL}"
+        MSG="${MSG}--$BOUNDARY--"
 }   
   
-  
-  
-
 function html_table_footer
 {
-    MSG="${MSG}</tr>${NL}"
-    MSG="${MSG}</table>${NL}"
-    MSG="${MSG}<!--[if (gte mso 9)|(IE)]>${NL}"
-    MSG="${MSG}</td>${NL}"
-    MSG="${MSG}</tr>${NL}"
-    MSG="${MSG}</table>${NL}"
-    MSG="${MSG}<![endif]-->${NL}"
-    MSG="${MSG}</table>${NL}"
-    
+
+#       -----------------------------------------------------------------------
+#       Function to close the html part of email.
+#       Argument : None
+#
+#       -----------------------------------------------------------------------   		
+
+        MSG="${MSG}</tr>${NL}"
+        MSG="${MSG}</table>${NL}"
+        MSG="${MSG}<!--[if (gte mso 9)|(IE)]>${NL}"
+        MSG="${MSG}</td>${NL}"
+        MSG="${MSG}</tr>${NL}"
+        MSG="${MSG}</table>${NL}"
+        MSG="${MSG}<![endif]-->${NL}"
+        MSG="${MSG}</table>${NL}"    
 }
 
-function urlencode {
-    # urlencode <string>
+function urlencode 
+{
 
-    old_lc_collate=$LC_COLLATE
-    LC_COLLATE=C
+#       -----------------------------------------------------------------------
+#       Function to encode a string as url.
+#       Argument : 
+#       1: The sting to encode
+#
+#       -----------------------------------------------------------------------   			
 
-    local length="${#1}"
-    for (( i = 0; i < length; i++ )); do
-        local c="${1:$i:1}"
-        case $c in
-            [a-zA-Z0-9.~_-]) printf '%s' "$c" ;;
-            *) printf '%%%02X' "'$c" ;;
-        esac
-    done
-
-    LC_COLLATE=$old_lc_collate
+        old_lc_collate=$LC_COLLATE
+        LC_COLLATE=C
+        
+        local length="${#1}"
+        for (( i = 0; i < length; i++ )); do
+            local c="${1:$i:1}"
+            case $c in
+                [a-zA-Z0-9.~_-]) printf '%s' "$c" ;;
+                *) printf '%%%02X' "'$c" ;;
+            esac
+        done
+        
+        LC_COLLATE=$old_lc_collate
 }
 
 function add_file_to_mail
 {
 
-#   -----------------------------------------------------------------------
-#   Function for make multi attachement
-#   Arguments :
-#       1 : Full path of the file to attach to the future email
-#       2 : The name of file to be displayed as attached file
-#   ----------------------------------------------------------------------- 
+#      -----------------------------------------------------------------------
+#      Function for make multi attachement
+#      Arguments :
+#      1 : Full path of the file to attach to the future email
+#      2 : The name of file to be displayed as attached file
+#      ----------------------------------------------------------------------- 
 
-    if [ "$TEMP_ADD_FILE" = "" ]; then
-      TEMP_ADD_FILE=$(mktemp  "${TEMP_DIR}/${PROGNAME}.$$.XXXXXX")
-      if [ "$TEMP_ADD_FILE" = "" ]; then
-        error_exit "cannot create temp file!"
-      fi
-    fi  
-    FILE=$1
-    FILE_NAME_TO_DISPLAY=$2
-    echo "$FILE;$FILE_NAME_TO_DISPLAY" >> "${TEMP_ADD_FILE}"
+       if [ "$TEMP_ADD_FILE" = "" ]; then
+         TEMP_ADD_FILE=$(mktemp  "${TEMP_DIR}/${PROGNAME}.$$.XXXXXX")
+         if [ "$TEMP_ADD_FILE" = "" ]; then
+           error_exit "cannot create temp file!"
+         fi
+       fi  
+       FILE=$1
+       FILE_NAME_TO_DISPLAY=$2
+       echo "$FILE;$FILE_NAME_TO_DISPLAY" >> "${TEMP_ADD_FILE}"
 }
 
 function add_info_to_html
-{      
+{
+
+#       -----------------------------------------------------------------------
+#       Function to add information on the mail.
+#       I'm using a temporary file and add tag like <!-- #EMAIL TAG counter type:html -->
+#       If later, I'm changing the way to add the information on the html part
+#       I could always change only the html function (the one which add <td>text</td></tr>
+#
+#       Argument : 
+#       1: a sting or a file
+#       2: A number (0,1,2) corresponding to an icon (NOTOK,OK,WARNING)
+#
+#       -----------------------------------------------------------------------   		      
   
-    if [ "${INT_EMAIL_TMP}" = "" ]; then
-      init_email
-    fi
-    INT_TAG_EMAIL_COUNTER=$((INT_TAG_EMAIL_COUNTER+1))
-    if [ "${2}" != "" ]; then
-      echo "<!-- #EMAIL TAG ${INT_TAG_EMAIL_COUNTER} type:html img:${2} -->" >> ${INT_EMAIL_TMP}
-    else
-      echo "<!-- #EMAIL TAG ${INT_TAG_EMAIL_COUNTER} type:html -->" >> ${INT_EMAIL_TMP}
-    fi
-    if [ -f "$1" ] ; then
-      cat $1 >> ${INT_EMAIL_TMP}
-    else
-      echo "$1" >> ${INT_EMAIL_TMP} 
-    fi
+        if [ "${INT_EMAIL_TMP}" = "" ]; then
+          init_email
+        fi
+        INT_TAG_EMAIL_COUNTER=$((INT_TAG_EMAIL_COUNTER+1))
+        if [ "${2}" != "" ]; then
+          echo "<!-- #EMAIL TAG ${INT_TAG_EMAIL_COUNTER} type:html img:${2} -->" >> ${INT_EMAIL_TMP}
+        else
+          echo "<!-- #EMAIL TAG ${INT_TAG_EMAIL_COUNTER} type:html -->" >> ${INT_EMAIL_TMP}
+        fi
+        if [ -f "$1" ] ; then
+          cat $1 >> ${INT_EMAIL_TMP}
+        else
+          echo "$1" >> ${INT_EMAIL_TMP} 
+        fi
 }
 
 function add_info_to_html_pre
-{      
+{
+	
+#       -----------------------------------------------------------------------
+#       Function to add information on the mail with <pre></pre>
+#       Same as add_info_to_html
+#
+#       Argument : 
+#       1: a sting or a file
+#       2: A number (0,1,2) corresponding to an icon (NOTOK,OK,WARNING)
+#
+#       -----------------------------------------------------------------------   			      
   
-    if [ "${INT_EMAIL_TMP}" = "" ]; then
-      init_email
-    fi
-    INT_TAG_EMAIL_COUNTER=$((INT_TAG_EMAIL_COUNTER+1))
-    if [ "${2}" != "" ]; then
-      echo "<!-- #EMAIL TAG ${INT_TAG_EMAIL_COUNTER} type:html_pre img:${2} -->" >> ${INT_EMAIL_TMP}
-    else
-      echo "<!-- #EMAIL TAG ${INT_TAG_EMAIL_COUNTER} type:html_pre -->" >> ${INT_EMAIL_TMP}
-    fi
-    if [ -f "$1" ] ; then
-      cat $1 >> ${INT_EMAIL_TMP}
-    else
-      echo "$1" >> ${INT_EMAIL_TMP} 
-    fi
+        if [ "${INT_EMAIL_TMP}" = "" ]; then
+          init_email
+        fi
+        INT_TAG_EMAIL_COUNTER=$((INT_TAG_EMAIL_COUNTER+1))
+        if [ "${2}" != "" ]; then
+          echo "<!-- #EMAIL TAG ${INT_TAG_EMAIL_COUNTER} type:html_pre img:${2} -->" >> ${INT_EMAIL_TMP}
+        else
+          echo "<!-- #EMAIL TAG ${INT_TAG_EMAIL_COUNTER} type:html_pre -->" >> ${INT_EMAIL_TMP}
+        fi
+        if [ -f "$1" ] ; then
+          cat $1 >> ${INT_EMAIL_TMP}
+        else
+          echo "$1" >> ${INT_EMAIL_TMP} 
+        fi
 }
 
 function add_info_to_mail
 {
+	
+#       -----------------------------------------------------------------------
+#       Function to add information on the html using the temporary file.
+#       Same as add_info_to_html
+#
+#       Argument : None
+#
+#       -----------------------------------------------------------------------   				
   
         HTML_MESSAGE=""
         for i in `echo "${INT_HTML_MAIL}"`
@@ -755,7 +805,7 @@ function manage_keep_email
 
 #       -----------------------------------------------------------------------
 #       Function called for keep the mime header always of the top of the mail
-#       No Argument
+#       Not used
 #       -----------------------------------------------------------------------
 
     TEMP_KEEP_MAIL=$(mktemp  "${TEMP_DIR}/${PROGNAME}.$$.XXXXXX")
@@ -789,6 +839,9 @@ function manage_keep_email
 
 function boundary_research
 {
+	
+#Not used
+
     INT_OLD_ATTACH=""
     INT_OLD_HTML=""
     for i in `cat ${TEMP_KEEP_MAIL}`
@@ -817,42 +870,59 @@ function boundary_research
 
 function search_section
 {
-    INT_MAIL_SECTION=""
-    INT_MAIL_MAX_LINE=`wc -l ${INT_EMAIL_TMP} | awk {'print $1'}`
-    for i in `awk '{IGNORECASE=1;tmp=match($0, /^<!--.*EMAIL TAG.*-->/);if (tmp) {print NR}}' ${INT_EMAIL_TMP}`
-    do
-      if [ "${INT_MAIL_SECTION}" = "" ]; then
-        INT_MAIL_SECTION="${i}"
-      else
-        INT_BEFORE=`echo "${i} -1" | bc`
-        INT_MAIL_SECTION="${INT_MAIL_SECTION},${INT_BEFORE} ${i}"
-      fi  
-    done
-    if [ "${INT_MAIL_SECTION}" = "" ]; then
-        INT_MAIL_SECTION="1"
-    fi
-    INT_MAIL_SECTION="${INT_MAIL_SECTION},${INT_MAIL_MAX_LINE}" 
+	
+#       -----------------------------------------------------------------------
+#       Function to search on the temporary file where are the section beginning
+#       by the <!--.*EMAIL TAG.*-->
+#
+#       Argument : None
+#
+#       -----------------------------------------------------------------------   		
+	
+        INT_MAIL_SECTION=""
+        INT_MAIL_MAX_LINE=`wc -l ${INT_EMAIL_TMP} | awk {'print $1'}`
+        for i in `awk '{IGNORECASE=1;tmp=match($0, /^<!--.*EMAIL TAG.*-->/);if (tmp) {print NR}}' ${INT_EMAIL_TMP}`
+        do
+          if [ "${INT_MAIL_SECTION}" = "" ]; then
+            INT_MAIL_SECTION="${i}"
+          else
+            INT_BEFORE=`echo "${i} -1" | bc`
+            INT_MAIL_SECTION="${INT_MAIL_SECTION},${INT_BEFORE} ${i}"
+          fi  
+        done
+        if [ "${INT_MAIL_SECTION}" = "" ]; then
+            INT_MAIL_SECTION="1"
+        fi
+        INT_MAIL_SECTION="${INT_MAIL_SECTION},${INT_MAIL_MAX_LINE}" 
 } 
 
 function count_specific_section
 {
+		
+#       -----------------------------------------------------------------------
+#       Function to count how many specific section we found on the temporary 
+#       file.
+#
+#       Argument : 
+#       1: The type of section to search like html, html_pre ....
+#
+#       -----------------------------------------------------------------------   	
   
-  INT_TYPE_SEARCH="${1}"
-  INT_SP_FOUND="0"
-  
-  for i in ${INT_MAIL_SECTION}
-    do
-      INT_START_LINE=`echo $i | awk -F"," {'print $1'}`
-      INT_END_LINE=`echo $i | awk -F"," {'print $2'}`
-      INT_SP_MAIL_SECTION=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
-      INT_TYPE_SECTION=`echo "${INT_SP_MAIL_SECTION}" | head -n1 | awk  {'for(i=1; i<=NF; i++) {if( $i ~ /type/) print $i}'} | awk -F":" {'print $2'}`
-      if [ "${INT_TYPE_SECTION}" = "${INT_TYPE_SEARCH}" ]; then
-      #if [[ "${INT_TYPE_SECTION}" =~ $INT_TYPE_SEARCH ]]; then 
-        INT_SP_FOUND=$((INT_SP_FOUND+1))
-      fi
-    done
-    echo "${INT_SP_FOUND}"
-  
+        INT_TYPE_SEARCH="${1}"
+        INT_SP_FOUND="0"
+        
+        for i in ${INT_MAIL_SECTION}
+        do
+          INT_START_LINE=`echo $i | awk -F"," {'print $1'}`
+          INT_END_LINE=`echo $i | awk -F"," {'print $2'}`
+          INT_SP_MAIL_SECTION=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
+          INT_TYPE_SECTION=`echo "${INT_SP_MAIL_SECTION}" | head -n1 | awk  {'for(i=1; i<=NF; i++) {if( $i ~ /type/) print $i}'} | awk -F":" {'print $2'}`
+          if [ "${INT_TYPE_SECTION}" = "${INT_TYPE_SEARCH}" ]; then
+          #if [[ "${INT_TYPE_SECTION}" =~ $INT_TYPE_SEARCH ]]; then 
+            INT_SP_FOUND=$((INT_SP_FOUND+1))
+          fi
+        done
+        echo "${INT_SP_FOUND}"
 }
 
 function unique_match_specific_section
@@ -934,9 +1004,11 @@ function add_file_to_temp
             printf '%s' "${INT_ATTACH}" >> ${INT_EMAIL_TMP}
           fi        
         done < "${TEMP_ADD_FILE}"
-        rm -f ${TEMP_ADD_FILE}  
+        rm -f ${TEMP_ADD_FILE}
+        TEMP_ADD_FILE=""  
       fi
       rm -f ${TEMP_ADD_FILE} 
+      TEMP_ADD_FILE=""  
     fi
     
 } 
@@ -970,9 +1042,7 @@ function html_email
       printf '%s' "${MSG}" | sendmail -t
     fi
     rm -f ${INT_EMAIL_TMP}
-    
-    
-    
+    INT_EMAIL_TMP=""    
 }
 
 #        -------------------------------------------------------------------
