@@ -528,7 +528,7 @@ function html_body
 #       Argument : None
 #
 #       -----------------------------------------------------------------------   
-	
+  
         if [ "${HTML_TITLE}" != "" ]; then
           INT_HTML_TITLE="
           <table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" >
@@ -568,7 +568,7 @@ function mime_html_footer
 #       Function to close the mime part of html.
 #       Argument : None
 #
-#       -----------------------------------------------------------------------   	
+#       -----------------------------------------------------------------------     
 
         MSG="${MSG}${NL}"
         MSG="${MSG}--$BOUNDARY--"
@@ -581,7 +581,7 @@ function html_table_footer
 #       Function to close the html part of email.
 #       Argument : None
 #
-#       -----------------------------------------------------------------------   		
+#       -----------------------------------------------------------------------       
 
         MSG="${MSG}</tr>${NL}"
         MSG="${MSG}</table>${NL}"
@@ -601,7 +601,7 @@ function urlencode
 #       Argument : 
 #       1: The sting to encode
 #
-#       -----------------------------------------------------------------------   			
+#       -----------------------------------------------------------------------         
 
         old_lc_collate=$LC_COLLATE
         LC_COLLATE=C
@@ -652,7 +652,7 @@ function add_info_to_html
 #       1: a sting or a file
 #       2: A number (0,1,2) corresponding to an icon (NOTOK,OK,WARNING)
 #
-#       -----------------------------------------------------------------------   		      
+#       -----------------------------------------------------------------------             
   
         if [ "${INT_EMAIL_TMP}" = "" ]; then
           init_email
@@ -672,7 +672,7 @@ function add_info_to_html
 
 function add_info_to_html_pre
 {
-	
+  
 #       -----------------------------------------------------------------------
 #       Function to add information on the mail with <pre></pre>
 #       Same as add_info_to_html
@@ -681,7 +681,7 @@ function add_info_to_html_pre
 #       1: a sting or a file
 #       2: A number (0,1,2) corresponding to an icon (NOTOK,OK,WARNING)
 #
-#       -----------------------------------------------------------------------   			      
+#       -----------------------------------------------------------------------               
   
         if [ "${INT_EMAIL_TMP}" = "" ]; then
           init_email
@@ -701,14 +701,14 @@ function add_info_to_html_pre
 
 function add_info_to_mail
 {
-	
+  
 #       -----------------------------------------------------------------------
 #       Function to add information on the html using the temporary file.
 #       Same as add_info_to_html
 #
 #       Argument : None
 #
-#       -----------------------------------------------------------------------   				
+#       -----------------------------------------------------------------------           
   
         HTML_MESSAGE=""
         for i in `echo "${INT_HTML_MAIL}"`
@@ -759,15 +759,15 @@ function add_info_to_mail
 
 function search_section
 {
-	
+  
 #       -----------------------------------------------------------------------
 #       Function to search on the temporary file where are the section beginning
 #       by the <!--.*EMAIL TAG.*-->
 #
 #       Argument : None
 #
-#       -----------------------------------------------------------------------   		
-	
+#       -----------------------------------------------------------------------       
+  
         INT_MAIL_SECTION=""
         INT_MAIL_MAX_LINE=`wc -l ${INT_EMAIL_TMP} | awk {'print $1'}`
         for i in `awk '{IGNORECASE=1;tmp=match($0, /^<!--.*EMAIL TAG.*-->/);if (tmp) {print NR}}' ${INT_EMAIL_TMP}`
@@ -787,7 +787,7 @@ function search_section
 
 function count_specific_section
 {
-		
+    
 #       -----------------------------------------------------------------------
 #       Function to count how many specific section we found on the temporary 
 #       file.
@@ -795,7 +795,8 @@ function count_specific_section
 #       Argument : 
 #       1: The type of section to search like html, html_pre ....
 #
-#       -----------------------------------------------------------------------   	
+#       Return string containing the number of section found.
+#       -----------------------------------------------------------------------     
   
         INT_TYPE_SEARCH="${1}"
         INT_SP_FOUND="0"
@@ -817,129 +818,167 @@ function count_specific_section
 function unique_match_specific_section
 {
   
-  INT_TYPE_SEARCH="${1}"
-  INT_SP_FOUND=""
+#       -----------------------------------------------------------------------
+#       Function to search a specific section and return the block where is this 
+#       section.
+#
+#       Argument : 
+#       1: The type of section to search like html, html_pre ....
+#
+#       !! Warning : Give the latest section found !! 
+#
+#       Return string containing the number of section found.
+#       -----------------------------------------------------------------------       
   
-  for i in ${INT_MAIL_SECTION}
-    do
-      INT_START_LINE=`echo $i | awk -F"," {'print $1'}`
-      INT_END_LINE=`echo $i | awk -F"," {'print $2'}`
-      INT_SP_MAIL_SECTION=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
-      INT_TYPE_SECTION=`echo "${INT_SP_MAIL_SECTION}" | head -n1 | awk  {'for(i=1; i<=NF; i++) {if( $i ~ /type/) print $i}'} | awk -F":" {'print $2'}`
-      if [ "${INT_TYPE_SECTION}" = "${INT_TYPE_SEARCH}" ]; then
-        INT_START_LINE=$((INT_START_LINE+1))
-        INT_SP_FOUND=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
-      fi
-    done
-    echo "${INT_SP_FOUND}"
-  
+        INT_TYPE_SEARCH="${1}"
+        INT_SP_FOUND=""
+        
+        for i in ${INT_MAIL_SECTION}
+        do
+          INT_START_LINE=`echo $i | awk -F"," {'print $1'}`
+          INT_END_LINE=`echo $i | awk -F"," {'print $2'}`
+          INT_SP_MAIL_SECTION=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
+          INT_TYPE_SECTION=`echo "${INT_SP_MAIL_SECTION}" | head -n1 | awk  {'for(i=1; i<=NF; i++) {if( $i ~ /type/) print $i}'} | awk -F":" {'print $2'}`
+          if [ "${INT_TYPE_SECTION}" = "${INT_TYPE_SEARCH}" ]; then
+            INT_START_LINE=$((INT_START_LINE+1))
+            INT_SP_FOUND=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
+          fi
+        done
+        echo "${INT_SP_FOUND}"  
 }
 
 function sort_section_type_html
 {
-    INT_HTML_MAIL_TMP=""
-    INT_HTML_MAIL=""
-    for i in ${INT_MAIL_SECTION}
-    do
-      INT_START_LINE=`echo $i | awk -F"," {'print $1'}`
-      INT_END_LINE=`echo $i | awk -F"," {'print $2'}`
-      INT_SP_MAIL_SECTION=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
-      INT_TYPE_SECTION=`echo "${INT_SP_MAIL_SECTION}" | head -n1 | awk  {'for(i=1; i<=NF; i++) {if( $i ~ /type/) print $i}'} | awk -F":" {'print $2'}`
-      INT_TYPE_SECTION_NUMBER=`echo "${INT_SP_MAIL_SECTION}" | head -n1 | awk  {'for(i=1; i<=NF; i++) {if( $i ~ /TAG/) print $(i+1)}'}`
-      if [ "${INT_TYPE_SECTION}" = "html" ]; then
-        INT_HTML_MAIL_TMP="${INT_HTML_MAIL_TMP}${INT_TYPE_SECTION_NUMBER} ${i}${NL}"
-      fi
-      if [ "${INT_TYPE_SECTION}" = "html_pre" ]; then
-        INT_HTML_MAIL_TMP="${INT_HTML_MAIL_TMP}${INT_TYPE_SECTION_NUMBER} ${i}${NL}"
-      fi
-    done
-    INT_HTML_MAIL=`echo "${INT_HTML_MAIL_TMP}" | sed '/^$/d' | sort -nk 1 | awk {'print $NF'}`  
+  
+#       -----------------------------------------------------------------------
+#       Function to search all section of type html html_pre 
+#       section.
+#
+#       Argument : 
+#       
+#       None
+#       -----------------------------------------------------------------------       
+	
+        INT_HTML_MAIL_TMP=""
+        INT_HTML_MAIL=""
+        for i in ${INT_MAIL_SECTION}
+        do
+          INT_START_LINE=`echo $i | awk -F"," {'print $1'}`
+          INT_END_LINE=`echo $i | awk -F"," {'print $2'}`
+          INT_SP_MAIL_SECTION=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
+          INT_TYPE_SECTION=`echo "${INT_SP_MAIL_SECTION}" | head -n1 | awk  {'for(i=1; i<=NF; i++) {if( $i ~ /type/) print $i}'} | awk -F":" {'print $2'}`
+          INT_TYPE_SECTION_NUMBER=`echo "${INT_SP_MAIL_SECTION}" | head -n1 | awk  {'for(i=1; i<=NF; i++) {if( $i ~ /TAG/) print $(i+1)}'}`
+          if [ "${INT_TYPE_SECTION}" = "html" ]; then
+            INT_HTML_MAIL_TMP="${INT_HTML_MAIL_TMP}${INT_TYPE_SECTION_NUMBER} ${i}${NL}"
+          fi
+          if [ "${INT_TYPE_SECTION}" = "html_pre" ]; then
+            INT_HTML_MAIL_TMP="${INT_HTML_MAIL_TMP}${INT_TYPE_SECTION_NUMBER} ${i}${NL}"
+          fi
+        done
+        INT_HTML_MAIL=`echo "${INT_HTML_MAIL_TMP}" | sed '/^$/d' | sort -nk 1 | awk {'print $NF'}`  
 }   
 
 
 
 function add_file_to_temp
 {
-    if [ "${TEMP_ADD_FILE}" != "" ]; then
-      if [ -f "$TEMP_ADD_FILE" ]; then
-        while IFS= read -r line
-        do
-          LFILE=`echo $line | awk -F";" {'print $1'}`
-          ATTACHED_FILE_NAME=`echo $line | awk -F";" {'print $2'}`
-          if [ "${ATTACHED_FILE_NAME}" = "" ]; then
-            ATTACHED_FILE_NAME=`echo $LFILE | awk -F"/" {'print $NF'}`
-          fi
-          if [ -f "${LFILE}" ] ; then
-            if [ "${BIN_FILE}" != "" ]; then
-              FILE_MIME_TYPE=`${BIN_FILE} -b --mime-type $LFILE 2>/dev/null`
-              if [ "${FILE_MIME_TYPE}" = "" ]; then
-                FILE_MIME_TYPE="text/plain"
+	
+#       -----------------------------------------------------------------------
+#       Function to add an attached file on the temporary file using mime style. 
+#       section.
+#
+#       Argument : 
+#       
+#       None
+#       -----------------------------------------------------------------------       
+	
+        if [ "${TEMP_ADD_FILE}" != "" ]; then
+          if [ -f "$TEMP_ADD_FILE" ]; then
+            while IFS= read -r line
+            do
+              LFILE=`echo $line | awk -F";" {'print $1'}`
+              ATTACHED_FILE_NAME=`echo $line | awk -F";" {'print $2'}`
+              if [ "${ATTACHED_FILE_NAME}" = "" ]; then
+                ATTACHED_FILE_NAME=`echo $LFILE | awk -F"/" {'print $NF'}`
               fi
-            else
-              FILE_MIME_TYPE="text/plain"
-            fi
-            INT_TAG_EMAIL_COUNTER=$((INT_TAG_EMAIL_COUNTER+1))
-            echo "<!-- #EMAIL TAG ${INT_TAG_EMAIL_COUNTER} type:attached_file -->" >> ${INT_EMAIL_TMP}
-            INT_ATTACH=""
-            INT_ATTACH="${INT_ATTACH}--BOUNDARY_KEEP${NL}"
-            #INT_ATTACH="${INT_ATTACH}--$BOUNDARY${NL}"
-            INT_ATTACH="${INT_ATTACH}Content-Type: ${FILE_MIME_TYPE}; name=\"${ATTACHED_FILE_NAME}\"${NL}"  
-            INT_ATTACH="${INT_ATTACH}Content-Transfer-Encoding: base64${NL}"
-            INT_ATTACH="${INT_ATTACH}Content-Disposition: attachment; filename=\"${ATTACHED_FILE_NAME}\"${NL}"
-            INT_ATTACH="${INT_ATTACH}${NL}"
-            INT_ATTACH_FILE=$( ${BIN_BASE64} -w 0 ${LFILE} )
-            INT_ATTACH="${INT_ATTACH}${INT_ATTACH_FILE}${NL}"
-            INT_ATTACH="${INT_ATTACH}${NL}" 
-            printf '%s' "${INT_ATTACH}" >> ${INT_EMAIL_TMP}
-          fi        
-        done < "${TEMP_ADD_FILE}"
-        rm -f ${TEMP_ADD_FILE}
-        TEMP_ADD_FILE=""  
-      fi
-      rm -f ${TEMP_ADD_FILE} 
-      TEMP_ADD_FILE=""  
-    fi
-    
+              if [ -f "${LFILE}" ] ; then
+                if [ "${BIN_FILE}" != "" ]; then
+                  FILE_MIME_TYPE=`${BIN_FILE} -b --mime-type $LFILE 2>/dev/null`
+                  if [ "${FILE_MIME_TYPE}" = "" ]; then
+                    FILE_MIME_TYPE="text/plain"
+                  fi
+                else
+                  FILE_MIME_TYPE="text/plain"
+                fi
+                INT_TAG_EMAIL_COUNTER=$((INT_TAG_EMAIL_COUNTER+1))
+                echo "<!-- #EMAIL TAG ${INT_TAG_EMAIL_COUNTER} type:attached_file -->" >> ${INT_EMAIL_TMP}
+                INT_ATTACH=""
+                INT_ATTACH="${INT_ATTACH}--BOUNDARY_KEEP${NL}"
+                #INT_ATTACH="${INT_ATTACH}--$BOUNDARY${NL}"
+                INT_ATTACH="${INT_ATTACH}Content-Type: ${FILE_MIME_TYPE}; name=\"${ATTACHED_FILE_NAME}\"${NL}"  
+                INT_ATTACH="${INT_ATTACH}Content-Transfer-Encoding: base64${NL}"
+                INT_ATTACH="${INT_ATTACH}Content-Disposition: attachment; filename=\"${ATTACHED_FILE_NAME}\"${NL}"
+                INT_ATTACH="${INT_ATTACH}${NL}"
+                INT_ATTACH_FILE=$( ${BIN_BASE64} -w 0 ${LFILE} )
+                INT_ATTACH="${INT_ATTACH}${INT_ATTACH_FILE}${NL}"
+                INT_ATTACH="${INT_ATTACH}${NL}" 
+                printf '%s' "${INT_ATTACH}" >> ${INT_EMAIL_TMP}
+              fi        
+            done < "${TEMP_ADD_FILE}"
+            rm -f ${TEMP_ADD_FILE}
+            TEMP_ADD_FILE=""  
+          fi
+          rm -f ${TEMP_ADD_FILE} 
+          TEMP_ADD_FILE=""  
+        fi    
 } 
 
 function html_email
 {
-    if [ "${INT_EMAIL_TMP}" = "" ]; then
-      exit
-    fi
-    if [ "${HTML_TITLE}" != "" ]; then
-      INT_TAG_EMAIL_COUNTER=$((INT_TAG_EMAIL_COUNTER+1))
-      echo "<!-- #EMAIL TAG ${INT_TAG_EMAIL_COUNTER} type:title -->" >> ${INT_EMAIL_TMP}
-      echo "${HTML_TITLE}" >> ${INT_EMAIL_TMP}
-      HTML_TITLE=""
-    fi
-    add_file_to_temp
-    if [ "${KEEP_MAIL}" = "1" ]; then
-      cat ${INT_EMAIL_TMP} >> "${KEEP_MAIL_FILE}"
-    else
-      search_section
-      mime_header
-      mime_add_icon
-      mime_attach_file
-      mime_html_header
-      html_style
-      html_table_header
-      sort_section_type_html
-      add_info_to_mail
-      html_body_header
-      html_body
-      printf '%s' "${MSG}" | sendmail -t
-    fi
-    rm -f ${INT_EMAIL_TMP}
-    INT_EMAIL_TMP=""    
+	
+#       -----------------------------------------------------------------------
+#       Function used to concatenate all the information and building/sending the
+#       email.
+#
+#       Argument : 
+#       
+#       None
+#       -----------------------------------------------------------------------  
+     	
+         if [ "${INT_EMAIL_TMP}" = "" ]; then
+           exit
+         fi
+         if [ "${HTML_TITLE}" != "" ]; then
+           INT_TAG_EMAIL_COUNTER=$((INT_TAG_EMAIL_COUNTER+1))
+           echo "<!-- #EMAIL TAG ${INT_TAG_EMAIL_COUNTER} type:title -->" >> ${INT_EMAIL_TMP}
+           echo "${HTML_TITLE}" >> ${INT_EMAIL_TMP}
+           HTML_TITLE=""
+         fi
+         add_file_to_temp
+         if [ "${KEEP_MAIL}" = "1" ]; then
+           cat ${INT_EMAIL_TMP} >> "${KEEP_MAIL_FILE}"
+         else
+           search_section
+           mime_header
+           mime_add_icon
+           mime_attach_file
+           mime_html_header
+           html_style
+           html_table_header
+           sort_section_type_html
+           add_info_to_mail
+           html_body_header
+           html_body
+           printf '%s' "${MSG}" | sendmail -t
+         fi
+         rm -f ${INT_EMAIL_TMP}
+         INT_EMAIL_TMP=""    
 }
 
 #        -------------------------------------------------------------------
 #        Program starts here
 #        -------------------------------------------------------------------
 
-
-  
   
 if [ ! -f "/usr/bin/which" ]; then
     echo "Please, check the binary variable for this script as which as not been found ..."
@@ -960,6 +999,3 @@ if [ "${TEMP_DIR}" = "" ]; then
         TEMP_DIR=/tmp
     fi
 fi    
-
- 
-
