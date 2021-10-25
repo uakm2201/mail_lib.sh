@@ -66,5 +66,5 @@ Before the html_email instruction, add this line:
        add_info_to_html "All good." 0
 ```       
 
-Easy ...
+Easy ....
 

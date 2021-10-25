@@ -633,13 +633,35 @@ function add_file_to_mail
          if [ "$TEMP_ADD_FILE" = "" ]; then
            TEMP_ADD_FILE=$(mktemp  "${TEMP_DIR}/${PROGNAME}.$$.XXXXXX")
            if [ "$TEMP_ADD_FILE" = "" ]; then
-             error_exit "cannot create temp file!"
+             echo "Cannot create temp file (Function add_file_to_mail)."
+             exit 1
            fi
          fi  
          FILE=$1
          FILE_NAME_TO_DISPLAY=$2
          echo "$FILE;$FILE_NAME_TO_DISPLAY" >> "${TEMP_ADD_FILE}"
+       else
+       	 BIN_GZIP=`check_bin gzip`
+       	 if [ "${BIN_GZIP}" != "" ]; then
+       	   if [ "${INT_EMAIL_TMP}" = "" ]; then
+             init_email
+           fi
+           if [ "$TEMP_ADD_FILE" = "" ]; then
+             TEMP_ADD_FILE=$(mktemp  "${TEMP_DIR}/${PROGNAME}.$$.XXXXXX")
+             if [ "$TEMP_ADD_FILE" = "" ]; then
+             	 echo "Cannot create temp file (Function add_file_to_mail)."
+               exit 1
+             fi
+           fi
+           ATTACHED_FILE_NAME_NO_EXT=`echo $1 | awk -F"/" {'print $NF'} | awk -F "." {'print $1'}`
+           TEMP_ZIP=$(mktemp  "${TEMP_DIR}/${PROGNAME}.$$.XXXXXX")
+           ${BIN_GZIP} -c $1 > ${TEMP_ZIP}
+           echo "${TEMP_ZIP};${ATTACHED_FILE_NAME_NO_EXT}.gz" >> $TEMP_ADD_FILE
+           add_file_to_temp
+           rm -f ${TEMP_ZIP}
+         fi
        fi
+       
 }
 
 function add_info_to_html
@@ -972,7 +994,7 @@ function html_email
            add_info_to_mail
            html_body_header
            html_body
-           printf '%s' "${MSG}" | sendmail -t
+           printf '%s' "${MSG}" | ${BIN_SENDMAIL} -t
          fi
          rm -f ${INT_EMAIL_TMP}
          INT_EMAIL_TMP=""    
