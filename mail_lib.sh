@@ -43,6 +43,7 @@
         
         
         KEEP_MAIL=0               #Constant used to keep the mail as a file (Value=1) or not (Value=0)
+        AUTO_ZIP=0                #Constant used to automatically zip each attached file.
         LOGO=0                    #Constant used to add a logo (Value=1) or not (Value=0)
         DEBUG_EMAIL_TABLE=0       #Put to 1 if you would like to have a border on each table of your email.
         
@@ -243,7 +244,7 @@ function mime_add_icon
           # Take care about the type of image define by Content-Type: image/xxx on the header.
           # Here, I'm using a png image.
           #
-          # INT_LOGO=`base64 /opt/share/images/Serca.png`
+          # INT_LOGO=`${BIN_BASE64} /opt/share/images/Serca.png`
           
           INT_LOGO=""
           INT_LOGO="${INT_LOGO}iVBORw0KGgoAAAANSUhEUgAAAc4AAAHOCAMAAAAmOBmCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdC${NL}"
@@ -628,15 +629,17 @@ function add_file_to_mail
 #      2 : The name of file to be displayed as attached file
 #      ----------------------------------------------------------------------- 
 
-       if [ "$TEMP_ADD_FILE" = "" ]; then
-         TEMP_ADD_FILE=$(mktemp  "${TEMP_DIR}/${PROGNAME}.$$.XXXXXX")
+       if [ "${AUTO_ZIP}" != "1" ]; then
          if [ "$TEMP_ADD_FILE" = "" ]; then
-           error_exit "cannot create temp file!"
-         fi
-       fi  
-       FILE=$1
-       FILE_NAME_TO_DISPLAY=$2
-       echo "$FILE;$FILE_NAME_TO_DISPLAY" >> "${TEMP_ADD_FILE}"
+           TEMP_ADD_FILE=$(mktemp  "${TEMP_DIR}/${PROGNAME}.$$.XXXXXX")
+           if [ "$TEMP_ADD_FILE" = "" ]; then
+             error_exit "cannot create temp file!"
+           fi
+         fi  
+         FILE=$1
+         FILE_NAME_TO_DISPLAY=$2
+         echo "$FILE;$FILE_NAME_TO_DISPLAY" >> "${TEMP_ADD_FILE}"
+       fi
 }
 
 function add_info_to_html

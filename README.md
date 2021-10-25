@@ -1,12 +1,21 @@
-# `mail_lib.sh`
+# mail_lib.sh
+
+## _Attach this library to your bash script and send easily an HTML email._
+
+
 This script is used every day to send a responsive html message from Production/Development Unix Systems.
-Regarding the responsive, I'm not an expert about HTML. But you could attach files, give a priority to your email ....
+
+# Features
+- Insert a new line to your email using add_info_to_html function.
+- Add some small icons (Ok, Error, Warning) to have a visual informations.
+- Quickly add an attached files.
+- Useful functionalities (Logo, Autozip ..) 
 
 `How to ? `
 
 Simple ...
 
-```plain
+```sh
 
 #!/bin/bash 
 #       -------------------------------------------------------------------
@@ -27,21 +36,20 @@ Simple ...
         MAIL_SUBJECT="First Email Test"
         
         add_info_to_html "1rst Line"
-        add_info_to_html "Error with image" 0
+        add_info_to_html "Error with image." 1
         
         html_email
 ```
 
 
-`How to attach a file ? `
+`How to attach a file ?`
 
-      Before the html_email instruction, add this line:
+Before the html_email instruction, add this line:
       
-```plain
+```sh
 
         #add_file_to_mail "/Full Path of my file" "Name of displayed file on the email"
         add_file_to_mail "/tmp/example.txt" "example.txt"
-        
 ```   
 
 `How to attach a logo ?`
@@ -49,6 +57,13 @@ Simple ...
 ```plain    
         #Use the constant LOGO    
         LOGO=1    
+```       
+
+`Want to validate something ?`
+
+```sh
+       # 0 = Error, 1 = Ok, 2 = Warning 
+       add_info_to_html "All good." 0
 ```       
 
 Easy ...
