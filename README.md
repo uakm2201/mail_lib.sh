@@ -5,6 +5,8 @@
 
 This script is used every day to send a responsive html message from Production/Development Unix Systems.
 
+<img src=“https://github.com/uakm2201/main/email.png”>
+
 # Features
 - Insert a new line to your email using add_info_to_html function.
 - Add some small icons (Ok, Error, Warning) to have a visual informations.
