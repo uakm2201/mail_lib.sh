@@ -5,7 +5,10 @@
 
 This script is used every day to send a responsive html message from Production/Development Unix Systems.
 
-<img src=“https://github.com/uakm2201/main/email.png”>
+![](https://github.com/uakm2201/mail_lib.sh/blob/main/email.png)
+
+![](https://github.com/uakm2201/mail_lib.sh/blob/main/email_small.png)
+
 
 # Features
 - Insert a new line to your email using add_info_to_html function.
