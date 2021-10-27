@@ -37,7 +37,8 @@
         # Change this color depending on your flavours ...
         
         HTML_BG_COLOR="#f0f0f0"
-        HTML_HEAD_BG_COLOR="#ffffff"
+        HTML_HEAD_BG_COLOR="#2F70AC"
+        HTML_HEAD_BG_COLOR="#981104"
         HTLM_HEAD_FONT_COLOR="#04364c"
         HTML_BODY_BG_COLOR="#ffffff"
         
@@ -383,7 +384,7 @@ function mime_attach_file
         done
 }
 
-function mime_html_header
+function mime_html_header_old
 {
   
 #       -----------------------------------------------------------------------
@@ -407,7 +408,25 @@ function mime_html_header
             MSG="${MSG}<title>${HTML_TITLE}</title>${NL}"
         fi
         MSG="${MSG}${NL}" 
-}   
+}
+
+function mime_html_header
+{
+  
+#       -----------------------------------------------------------------------
+#       Function to define on the mime header the html body part.
+#       Argument : None
+#
+#       -----------------------------------------------------------------------
+      
+        local END_SECTION=`bt_search_section "<!--HTML_MIME_HEADER-->" | awk -F";" {'print $NF'}`
+        local INT_MSG=`boiler_template | awk NR==1,NR==${END_SECTION}`
+        MSG="${MSG}--$BOUNDARY${NL}"
+        MSG="${MSG}Content-Type: text/html${NL}"
+        MSG="${MSG}Content-Transfer-Encoding: 7bit${NL}"
+        MSG="${MSG}${NL}"
+        MSG="${MSG}${INT_MSG}${NL}"
+}      
 
 function html_style
 {
@@ -447,7 +466,7 @@ function html_style
 
 }
 
-function html_table_header
+function html_table_header_old
 {
   
 #       -----------------------------------------------------------------------
@@ -469,6 +488,54 @@ function html_table_header
         MSG="${MSG}<tr>${NL}"
         MSG="${MSG}${NL}"
 }
+
+function html_table_header
+{
+  
+#       -----------------------------------------------------------------------
+#       Function to define the main table on the html email part.
+#       Argument : None
+#
+#       ----------------------------------------------------------------------- 
+  
+        local SECTION=`bt_search_section "<!--HTML_TABLE_HEADER-->"`
+        local START_SECTION=`echo ${SECTION} | awk -F";" {'print $1'}`
+        local END_SECTION=`echo ${SECTION} | awk -F";" {'print $2'}`
+        local INT_MSG=`boiler_template | awk NR==${START_SECTION},NR==${END_SECTION}`
+        local INT_DATE=`date '+%d %B %Y'`
+        local INT_LOGO="\&nbsp;"
+        
+        #Change the variable in the message
+
+        if [ "${LOGO}" = "1" ]; then        
+          INT_LOGO="<table style=\"text-align:left;; background-color:#ffffff;width:100%;min-width:100%;\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" dir=\"ltr\">"
+          INT_LOGO="${INT_LOGO}      <tbody>"
+          INT_LOGO="${INT_LOGO}          <tr>"
+          INT_LOGO="${INT_LOGO}              <td align=\"center\" style=\"text-align: center;padding: 20px 0; font-family:Arial,sans-serif;\">"
+          INT_LOGO="${INT_LOGO}                  <img src=\"cid:logo\" height=\"150\" style=\"clear:both;display:block;height:150px;margin:auto;max-width:100%;outline:0;text-decoration:none;\" alt=\"\">"
+          INT_LOGO="${INT_LOGO}              </td>"
+          INT_LOGO="${INT_LOGO}          </tr>"
+          INT_LOGO="${INT_LOGO}      </tbody>"
+          INT_LOGO="${INT_LOGO}</table>"
+        else
+          INT_LOGO="\&nbsp;"
+        fi
+        INT_MSG=`echo "${INT_MSG}" | sed "s~IMG_VAR~${INT_LOGO}~g"`
+        INT_MSG=`echo "${INT_MSG}" | sed "s/DATE_VAR/${INT_DATE}/g"`
+        INT_MSG=`echo "${INT_MSG}" | sed "s/UNIX_VAR/${HOSTNAME}/g"`
+        INT_MSG=`echo "${INT_MSG}" | sed "s/HTML_HEAD_BG_COLOR/${HTML_HEAD_BG_COLOR}/g"`
+        INT_COUNT=`count_specific_section title`
+        if [ "${INT_COUNT}" = "1" ]; then
+            HTML_TITLE=`unique_match_specific_section title`
+        else
+            HTML_TITLE="\&nbsp;"
+        fi
+        INT_MSG=`echo "${INT_MSG}" | sed "s~HTML_TITLE_VAR~${HTML_TITLE}~g"`
+        MSG="${MSG}${NL}"
+        MSG="${MSG}${INT_MSG}${NL}"
+}
+
+
 
 function html_body_header
 {
@@ -528,6 +595,33 @@ function html_body
 #       Here, we add all text coming from the function add_info_to_html
 #       Argument : None
 #
+#       -----------------------------------------------------------------------
+
+        local INT_BODY=""  
+        
+        #DEBUG
+        if [ "${DEBUG_EMAIL_TABLE}" = "1" ]; then
+        	MSG="${MSG}<style type=\"text/css\">${NL}"
+          MSG="${MSG}TABLE{border-style:solid;border-width:1px;border-color:#996;border-collapse:collapse;border-spacing:0;empty-cells:show}${NL}"
+          MSG="${MSG}</style>${NL}"
+        fi
+        
+        INT_BODY="<table style=\"text-align:left;; border-bottom:1px solid #f3f3f3;mso-border-bottom-alt:none;padding:0;vertical-align:top;width:100%;\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" dir=\"ltr\">${NL}"
+        INT_BODY="${INT_BODY}<tbody>${NL}"
+        INT_BODY="${INT_BODY}${HTML_MESSAGE}${NL}"
+        INT_BODY="${INT_BODY}</tbody></table>${NL}"
+        MSG="${MSG}${INT_BODY}${NL}"
+        
+}
+
+function html_body_old
+{
+
+#       -----------------------------------------------------------------------
+#       Function to define the body of the email.
+#       Here, we add all text coming from the function add_info_to_html
+#       Argument : None
+#
 #       -----------------------------------------------------------------------   
   
         if [ "${HTML_TITLE}" != "" ]; then
@@ -575,7 +669,7 @@ function mime_html_footer
         MSG="${MSG}--$BOUNDARY--"
 }   
   
-function html_table_footer
+function html_table_footer_old
 {
 
 #       -----------------------------------------------------------------------
@@ -592,6 +686,24 @@ function html_table_footer
         MSG="${MSG}</table>${NL}"
         MSG="${MSG}<![endif]-->${NL}"
         MSG="${MSG}</table>${NL}"    
+}
+
+function html_table_footer
+{
+
+#       -----------------------------------------------------------------------
+#       Function to close the html part of email.
+#       Argument : None
+#
+#       -----------------------------------------------------------------------    
+
+				local SECTION=`bt_search_section "<!--HTML_TABLE_FOOTER-->"`
+        local START_SECTION=`echo ${SECTION} | awk -F";" {'print $1'}`
+        local END_SECTION=`boiler_template | wc -l | awk {'print $1'}`           
+        local INT_MSG=`boiler_template | awk NR==${START_SECTION},NR==${END_SECTION}`
+        
+        INT_MSG=`echo "${INT_MSG}" | sed "s/HTML_HEAD_BG_COLOR/${HTML_HEAD_BG_COLOR}/g"`
+        MSG="${MSG}${INT_MSG}${NL}"    
 }
 
 function urlencode 
@@ -641,15 +753,15 @@ function add_file_to_mail
          FILE_NAME_TO_DISPLAY=$2
          echo "$FILE;$FILE_NAME_TO_DISPLAY" >> "${TEMP_ADD_FILE}"
        else
-       	 BIN_GZIP=`check_bin gzip`
-       	 if [ "${BIN_GZIP}" != "" ]; then
-       	   if [ "${INT_EMAIL_TMP}" = "" ]; then
+         BIN_GZIP=`check_bin gzip`
+         if [ "${BIN_GZIP}" != "" ]; then
+           if [ "${INT_EMAIL_TMP}" = "" ]; then
              init_email
            fi
            if [ "$TEMP_ADD_FILE" = "" ]; then
              TEMP_ADD_FILE=$(mktemp  "${TEMP_DIR}/${PROGNAME}.$$.XXXXXX")
              if [ "$TEMP_ADD_FILE" = "" ]; then
-             	 echo "Cannot create temp file (Function add_file_to_mail)."
+               echo "Cannot create temp file (Function add_file_to_mail)."
                exit 1
              fi
            fi
@@ -660,8 +772,7 @@ function add_file_to_mail
            add_file_to_temp
            rm -f ${TEMP_ZIP}
          fi
-       fi
-       
+       fi       
 }
 
 function add_info_to_html
@@ -724,7 +835,7 @@ function add_info_to_html_pre
         fi
 }
 
-function add_info_to_mail
+function add_info_to_mail_old
 {
   
 #       -----------------------------------------------------------------------
@@ -780,7 +891,65 @@ function add_info_to_mail
           
           HTML_MESSAGE="${HTML_MESSAGE}</tr>${NL}"            
         done
-}   
+} 
+
+function add_info_to_mail
+{
+  
+#       -----------------------------------------------------------------------
+#       Function to add information on the html using the temporary file.
+#       Same as add_info_to_html
+#
+#       Argument : None
+#
+#       -----------------------------------------------------------------------           
+  
+        HTML_MESSAGE=""
+        for i in `echo "${INT_HTML_MAIL}"`
+        do
+          ICON=""
+          INT_START_LINE=`echo $i | awk -F"," {'print $1'}`
+          INT_END_LINE=`echo $i | awk -F"," {'print $2'}`
+          INT_SP_MAIL_SECTION=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
+          INT_TYPE_SECTION=`echo "${INT_SP_MAIL_SECTION}" | head -n1 | awk  {'for(i=1; i<=NF; i++) {if( $i ~ /type/) print $i}'} | awk -F":" {'print $2'}`
+          INT_TYPE_IMG=`echo "${INT_SP_MAIL_SECTION}" | head -n1 | awk  {'for(i=1; i<=NF; i++) {if( $i ~ /img/) print $i}'} | awk -F":" {'print $2'}`
+          INT_START_LINE=$((INT_START_LINE+1))
+          INT_SP_FOUND=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
+          
+          if [ "${INT_TYPE_IMG}" != "" ]; then
+            case ${INT_TYPE_IMG} in
+              "0")  ICON="<img src='cid:notok'>";
+              ;;
+              "1")  ICON="<img src='cid:ok'>"
+              ;;
+              "2")  ICON="<img src='cid:warning'>"
+              ;;
+            esac
+          fi
+          
+          HTML_MESSAGE="${HTML_MESSAGE}<tr><td style=\"color:#0a0a0a;font-size:14px;padding:0 16px 0 16px;width:100%;font-weight:normal;mso-padding-alt: 16px;\">"
+          
+          if [ "${INT_TYPE_SECTION}" = "html_pre" ]; then
+                 HTML_MESSAGE="${HTML_MESSAGE}<pre>"
+          fi
+          
+          HTML_MESSAGE="${HTML_MESSAGE}${NL}"
+          HTML_MESSAGE="${HTML_MESSAGE}${INT_SP_FOUND}"
+          
+          if [ "${INT_TYPE_SECTION}" = "html_pre" ]; then
+                 HTML_MESSAGE="${HTML_MESSAGE}</pre>"
+          fi
+          
+          HTML_MESSAGE="${HTML_MESSAGE}${NL}"
+          HTML_MESSAGE="${HTML_MESSAGE}</td>"
+          
+          if [ "${ICON}" != "" ]; then
+            HTML_MESSAGE="${HTML_MESSAGE}<td style=\"padding:0 16px 0 16px;mso-padding-alt: 16px;\" width=20>$ICON</td>"
+          fi  
+          
+          HTML_MESSAGE="${HTML_MESSAGE}</tr>${NL}"            
+        done
+}  
 
 function search_section
 {
@@ -794,7 +963,7 @@ function search_section
 #       -----------------------------------------------------------------------       
   
         INT_MAIL_SECTION=""
-        INT_MAIL_MAX_LINE=`wc -l ${INT_EMAIL_TMP} | awk {'print $1'}`
+        INT_MAIL_MAX_LINE=`wc -l < ${INT_EMAIL_TMP}`
         for i in `awk '{IGNORECASE=1;tmp=match($0, /^<!--.*EMAIL TAG.*-->/);if (tmp) {print NR}}' ${INT_EMAIL_TMP}`
         do
           if [ "${INT_MAIL_SECTION}" = "" ]; then
@@ -883,7 +1052,7 @@ function sort_section_type_html
 #       
 #       None
 #       -----------------------------------------------------------------------       
-	
+  
         INT_HTML_MAIL_TMP=""
         INT_HTML_MAIL=""
         for i in ${INT_MAIL_SECTION}
@@ -907,7 +1076,7 @@ function sort_section_type_html
 
 function add_file_to_temp
 {
-	
+  
 #       -----------------------------------------------------------------------
 #       Function to add an attached file on the temporary file using mime style. 
 #       section.
@@ -916,7 +1085,7 @@ function add_file_to_temp
 #       
 #       None
 #       -----------------------------------------------------------------------       
-	
+  
         if [ "${TEMP_ADD_FILE}" != "" ]; then
           if [ -f "$TEMP_ADD_FILE" ]; then
             while IFS= read -r line
@@ -960,7 +1129,7 @@ function add_file_to_temp
 
 function html_email
 {
-	
+  
 #       -----------------------------------------------------------------------
 #       Function used to concatenate all the information and building/sending the
 #       email.
@@ -969,7 +1138,7 @@ function html_email
 #       
 #       None
 #       -----------------------------------------------------------------------  
-     	
+      
          if [ "${INT_EMAIL_TMP}" = "" ]; then
            exit
          fi
@@ -988,16 +1157,214 @@ function html_email
            mime_add_icon
            mime_attach_file
            mime_html_header
-           html_style
+           #html_style
+           html_body
            html_table_header
            sort_section_type_html
            add_info_to_mail
-           html_body_header
+           #html_body_header
            html_body
+           html_table_footer
            printf '%s' "${MSG}" | ${BIN_SENDMAIL} -t
+           #printf '%s' "${MSG}" > /tmp/tmp.txt
          fi
          rm -f ${INT_EMAIL_TMP}
          INT_EMAIL_TMP=""    
+}
+
+function bt_search_section
+{
+        local INT_START_GREP='^'"${1}"
+        local INT_STOP_GREP=`echo ${1} | sed 's/<!--/<!--END/g'`
+        INT_STOP_GREP='^'"${INT_STOP_GREP}"
+        local START=`boiler_template | sed 's/ //g' | awk {'print $0" "NR'} | egrep "${INT_START_GREP}" | awk {'print $NF'}`
+        local STOP=`boiler_template | sed 's/ //g' | awk {'print $0" "NR'} | egrep "${INT_STOP_GREP}" | awk {'print $NF'}`
+        echo "$START;$STOP"
+}
+
+
+function boiler_template
+{
+  
+cat <<- -EOF_HTML-
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <!-- prevent ios zooming + autoscaling -->
+        <meta name="x-apple-disable-message-reformatting">
+        <title></title>
+    </head>
+    <body style="line-height: 1.4; text-align:left;" dir="ltr">
+        <!--[if mso]>
+        <style type="text/css">
+            body,
+            table,
+            td,
+            th,
+            h1,
+            h2,
+            h3 {
+            font-family: Arial, sans-serif !important;
+            }
+        </style>
+        <![endif]-->
+        <!--END HTML_MIME_HEADER-->
+        <!--HTML_TABLE_HEADER-->
+        <div style="-moz-box-sizing:border-box;-ms-text-size-adjust:100%;-webkit-box-sizing:border-box;-webkit-text-size-adjust:100%;box-sizing:border-box;color:#0a0a0a;font-family:Arial,sans-serif;font-size:14px;font-weight:400;line-height:1.3;margin:0;min-width:100%;padding:0;width:100%">
+            <!-- LOGO -->
+                            IMG_VAR 
+            <!-- END LOGO -->
+            <table style="text-align:left;; width:100%;background:#f3f3f3;padding:0;border-spacing:0;font-family:Arial,sans-serif;font-size:14px;font-weight:200;line-height:1.3;vertical-align:top;" cellspacing="0" cellpadding="0" border="0" dir="ltr">
+                <tbody>
+                    <tr>
+                        <td style="width:5%;vertical-align:top;padding:0;">
+                            <div style="background-color: HTML_HEAD_BG_COLOR; color: #FFFFFF;">
+                                <table style="background-color: HTML_HEAD_BG_COLOR; color: #FFFFFF;; border-spacing:0;padding:0;width:100%" cellspacing="0" cellpadding="0" border="0">
+                                    <tbody>
+                                        <tr>
+                                            <td height="400px" style="height:400px;border-collapse:collapse!important;margin:0;mso-line-height-rule:exactly;padding:0;">&nbsp;</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
+                        <td style="vertical-align:top;padding:0;font-family:Arial,sans-serif;">
+                            <table align="center" style="background-color: HTML_HEAD_BG_COLOR; color: #FFFFFF;; text-align:left;; border-spacing:0;margin:0;padding:0;vertical-align:top;width:100%" cellspacing="0" cellpadding="0" border="0" dir="ltr">
+                                <tbody>
+                                    <tr>
+                                        <td style="border-collapse:collapse!important;color:#0a0a0a;line-height:1.3;margin:0;padding:0;vertical-align:top;word-wrap:normal">
+                                            <br>
+                                            <center style="background-color: HTML_HEAD_BG_COLOR; color: #FFFFFF;; font-size:22px;font-weight:400;mso-line-height-rule:exactly;line-height:36px;">Unix System UNIX_VAR.</center>
+                                            <center style="background-color: HTML_HEAD_BG_COLOR; color: #FFFFFF;; font-size:22px;font-weight:400;margin-bottom: 8px; mso-line-height-rule:exactly;line-height:36px;">&nbsp;</center>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table align="center" style="text-align:left;; border-spacing:0;background:#fefefe;margin:0;padding:0;text-align:center;vertical-align:top;width:100%" cellspacing="0" cellpadding="0" border="0" dir="ltr">
+                                <tbody>
+                                    <tr>
+                                        <td style="text-align:left;; -moz-hyphens:auto;-webkit-hyphens:auto;border-collapse:collapse!important;color:#0a0a0a;hyphens:auto;line-height:1.3;margin:0;padding:0;vertical-align:top;word-wrap:normal" dir="ltr">
+                                            <!--   Beginning of Mail   -->
+                                            <table style="text-align:left;; width:100%" cellspacing="0" cellpadding="0" border="0" dir="ltr">
+                                                <tbody>
+                                                    <tr>
+                                                        <td style="text-align:left;; margin:0;padding:0 0 0 16px;vertical-align:top;" dir="ltr">
+                                                            <p style="color:#8f8f8f;line-height:1.3;margin: 20px 0 0 0;">
+                                                                &nbsp;
+                                                            </p>
+                                                        </td>
+                                                        <!-- DATE -->
+                                                        <td style="text-align:left;; margin:0;padding:0 16px 0 0;text-align:right;vertical-align:top;" dir="ltr">
+                                                            <p style="color:#8f8f8f;line-height:1.3;margin:20px 0 0 0;font-weight:400;">
+                                                                DATE_VAR
+                                                            </p>
+                                                        </td>
+                                                        <!-- END DATE -->
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <!-- HTML TITLE -->
+                                            <table style="text-align:left;; vertical-align:top;width:100%" cellspacing="0" cellpadding="0" border="0" dir="ltr">
+                                                <tbody>
+                                                    <tr>
+                                                        <td style="text-align:left;; padding:0 8px 8px 16px;width:100%;" dir="ltr">
+                                                            <h2 style="font-size:18px;font-weight:400;line-height:1.3;margin:0;padding:0;word-wrap:normal; font-weight: bold; color: #006699;; font-weight:400;line-height:1.3;margin:0;padding:0;">
+                                                                <strong>HTML_TITLE_VAR</strong>
+                                                            </h2>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                            <!-- END HTML TITLE -->
+                                            <!--END HTML_TABLE_HEADER-->
+                                            <!-- MESSAGE HTML -->
+                                            <table style="text-align:left;; border-bottom:1px solid #f3f3f3;mso-border-bottom-alt:none;padding:0;vertical-align:top;width:100%;" cellspacing="0" cellpadding="0" border="0" dir="ltr">
+                                                <tbody>
+                                                    <!-- <tr>
+                                                        <td style="color:#0a0a0a;font-size:14px;padding:0 16px 0 16px;width:100%;font-weight:normal;mso-padding-alt: 16px;"> 
+                                                        
+                                                        </td> 
+                                                    </tr> -->
+                                                    MESSAGE_VAR
+                                            <!-- END MESSAGE HTML -->
+                                                </tbody>
+                                            </table>
+                                            <!--HTML_TABLE_FOOTER-->
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                        <td style="width:5%;vertical-align:top;padding:0;">
+                            <!-- Background that goes down part-way behind content -->
+                            <div style="background-color: HTML_HEAD_BG_COLOR; color: #FFFFFF;">
+                                <table style="background-color: HTML_HEAD_BG_COLOR; color: #FFFFFF;; text-align:left;; border-spacing:0;padding:0;width:100%" cellspacing="0" cellpadding="0" border="0" dir="ltr">
+                                    <tbody>
+                                        <tr>
+                                            <td height="400px" style="height:400px;border-collapse:collapse!important;margin:0;mso-line-height-rule:exactly;padding:0;">&nbsp;</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div style="background-color:#f3f3f3;">
+              <table style="text-align:left;; padding:0;width:100%;background-color:#f3f3f3" cellspacing="0" cellpadding="0" border="0" dir="ltr">
+                <tbody><tr><td height="20px" style="border-collapse:collapse!important;line-height:20px;margin:0;mso-line-height-rule:exactly;padding:0;">&nbsp;</td></tr></tbody>
+              </table>
+            </div>
+            &nbsp;
+            <style>
+                @media only screen {
+                html {
+                min-height: 100%;
+                background: #f3f3f3
+                }
+                }
+                @media only screen and (max-width:900px) {
+                table.body img {
+                width: auto;
+                height: auto
+                }
+                table.body center {
+                min-width: 0!important;
+                }
+                table.body .side-spacer {
+                width: 2.5%!important;
+                }
+                table.body .column,
+                table.body .columns {
+                height: auto!important;
+                -moz-box-sizing: border-box;
+                -webkit-box-sizing: border-box;
+                box-sizing: border-box;
+                padding-left: 16px!important;
+                padding-right: 16px!important
+                }
+                table.body .column .column,
+                table.body .column .columns,
+                table.body .columns .column,
+                table.body .columns .columns {
+                padding-left: 0!important;
+                padding-right: 0!important
+                }
+                }
+            </style>
+        </div>
+        <!-- prevent Gmail on iOS font size manipulation -->
+        <div style="display: none;white-space: nowrap;font: 15px courier;line-height: 0;">
+            &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+            &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+            &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+        </div>
+    </body>
+</html>
+
+-EOF_HTML-
+  
 }
 
 #        -------------------------------------------------------------------
