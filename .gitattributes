@@ -1,0 +1,10 @@
+#
+# Configure line ending normalisation for this repository.
+#
+
+# Auto detect text files and perform LF normalization
+*       text=auto
+
+*.txt   text
+# Shell scripts require LF
+*.sh    text eol=lf
