@@ -384,31 +384,6 @@ function mime_attach_file
         done
 }
 
-function mime_html_header_old
-{
-  
-#       -----------------------------------------------------------------------
-#       Function to define on the mime header the html body part.
-#       Argument : None
-#
-#       -----------------------------------------------------------------------
-      
-        MSG="${MSG}--$BOUNDARY${NL}"
-        MSG="${MSG}Content-Type: text/html${NL}"
-        MSG="${MSG}Content-Transfer-Encoding: 7bit${NL}"
-        MSG="${MSG}${NL}"
-        MSG="${MSG}<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">${NL}"
-        MSG="${MSG}${NL}"
-        MSG="${MSG}<html xmlns=\"http://www.w3.org/1999/xhtml\">${NL}"
-        MSG="${MSG}${NL}"
-        MSG="${MSG}<head>${NL}"
-        INT_COUNT=`count_specific_section title`
-        if [ "${INT_COUNT}" = "1" ]; then
-            HTML_TITLE=`unique_match_specific_section title`
-            MSG="${MSG}<title>${HTML_TITLE}</title>${NL}"
-        fi
-        MSG="${MSG}${NL}" 
-}
 
 function mime_html_header
 {
@@ -466,28 +441,6 @@ function html_style
 
 }
 
-function html_table_header_old
-{
-  
-#       -----------------------------------------------------------------------
-#       Function to define the main table on the html email part.
-#       Argument : None
-#
-#       ----------------------------------------------------------------------- 
-  
-        MSG="${MSG}<body yahoo bgcolor=\"${HTML_BG_COLOR}\">${NL}"
-        MSG="${MSG}<table width='100%' bgcolor='${HTML_BG_COLOR}' border='0' cellpadding='0' cellspacing='0'>${NL}"
-        MSG="${MSG}<tr>${NL}"
-        MSG="${MSG}<td>${NL}"
-        MSG="${MSG}<!--[if (gte mso 9)|(IE)]>${NL}"
-        MSG="${MSG}    <table width=\"600\" align=\"center\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">${NL}"
-        MSG="${MSG}<tr>${NL}"
-        MSG="${MSG}<td>${NL}"
-        MSG="${MSG}<![endif]-->${NL}"
-        MSG="${MSG}<table class=\"content\" align=\"center\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">${NL}"
-        MSG="${MSG}<tr>${NL}"
-        MSG="${MSG}${NL}"
-}
 
 function html_table_header
 {
@@ -614,48 +567,6 @@ function html_body
         
 }
 
-function html_body_old
-{
-
-#       -----------------------------------------------------------------------
-#       Function to define the body of the email.
-#       Here, we add all text coming from the function add_info_to_html
-#       Argument : None
-#
-#       -----------------------------------------------------------------------   
-  
-        if [ "${HTML_TITLE}" != "" ]; then
-          INT_HTML_TITLE="
-          <table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" >
-                <tr >
-                    <td class=\"h2\">
-                        <!-- Start Title-->
-                        $HTML_TITLE
-                        <!-- End Title -->
-                    </td>
-                </tr> 
-           </table>
-          "
-        else
-          INT_HTML_TITLE=""
-        fi    
-        INT_BODY="
-        <tr>
-         <td class=\"innerpadding borderbottom\" style=\"background-color: ${HTML_BODY_BG_COLOR};\">
-             ${INT_HTML_TITLE}
-             <table width=\"100%\" border=\"0\" cellspacing=\"0\" cellpadding=\"0\" >     
-                 <!--<tr>
-                     <td class=\"bodycopy\"> -->
-                         ${HTML_MESSAGE}
-                     <!--</td> -->
-                     <!--<td><img src='cid:ok'></td> -->
-                 <!--</tr> -->
-             </table>
-          </td>
-        </tr>"
-        MSG="${MSG}${INT_BODY}${NL}"
-}   
-
 function mime_html_footer
 {
 
@@ -669,25 +580,6 @@ function mime_html_footer
         MSG="${MSG}--$BOUNDARY--"
 }   
   
-function html_table_footer_old
-{
-
-#       -----------------------------------------------------------------------
-#       Function to close the html part of email.
-#       Argument : None
-#
-#       -----------------------------------------------------------------------       
-
-        MSG="${MSG}</tr>${NL}"
-        MSG="${MSG}</table>${NL}"
-        MSG="${MSG}<!--[if (gte mso 9)|(IE)]>${NL}"
-        MSG="${MSG}</td>${NL}"
-        MSG="${MSG}</tr>${NL}"
-        MSG="${MSG}</table>${NL}"
-        MSG="${MSG}<![endif]-->${NL}"
-        MSG="${MSG}</table>${NL}"    
-}
-
 function html_table_footer
 {
 
@@ -835,63 +727,6 @@ function add_info_to_html_pre
         fi
 }
 
-function add_info_to_mail_old
-{
-  
-#       -----------------------------------------------------------------------
-#       Function to add information on the html using the temporary file.
-#       Same as add_info_to_html
-#
-#       Argument : None
-#
-#       -----------------------------------------------------------------------           
-  
-        HTML_MESSAGE=""
-        for i in `echo "${INT_HTML_MAIL}"`
-        do
-          ICON=""
-          INT_START_LINE=`echo $i | awk -F"," {'print $1'}`
-          INT_END_LINE=`echo $i | awk -F"," {'print $2'}`
-          INT_SP_MAIL_SECTION=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
-          INT_TYPE_SECTION=`echo "${INT_SP_MAIL_SECTION}" | head -n1 | awk  {'for(i=1; i<=NF; i++) {if( $i ~ /type/) print $i}'} | awk -F":" {'print $2'}`
-          INT_TYPE_IMG=`echo "${INT_SP_MAIL_SECTION}" | head -n1 | awk  {'for(i=1; i<=NF; i++) {if( $i ~ /img/) print $i}'} | awk -F":" {'print $2'}`
-          INT_START_LINE=$((INT_START_LINE+1))
-          INT_SP_FOUND=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
-          
-          if [ "${INT_TYPE_IMG}" != "" ]; then
-            case ${INT_TYPE_IMG} in
-              "0")  ICON="<img src='cid:notok'>";
-              ;;
-              "1")  ICON="<img src='cid:ok'>"
-              ;;
-              "2")  ICON="<img src='cid:warning'>"
-              ;;
-            esac
-          fi
-          
-          HTML_MESSAGE="${HTML_MESSAGE}<tr><td class=\"bodycopy\">"
-          
-          if [ "${INT_TYPE_SECTION}" = "html_pre" ]; then
-                 HTML_MESSAGE="${HTML_MESSAGE}<pre>"
-          fi
-          
-          HTML_MESSAGE="${HTML_MESSAGE}${NL}"
-          HTML_MESSAGE="${HTML_MESSAGE}${INT_SP_FOUND}"
-          
-          if [ "${INT_TYPE_SECTION}" = "html_pre" ]; then
-                 HTML_MESSAGE="${HTML_MESSAGE}</pre>"
-          fi
-          
-          HTML_MESSAGE="${HTML_MESSAGE}${NL}"
-          HTML_MESSAGE="${HTML_MESSAGE}</td>"
-          
-          if [ "${ICON}" != "" ]; then
-            HTML_MESSAGE="${HTML_MESSAGE}<td align='center' width=20>$ICON</td>"
-          fi  
-          
-          HTML_MESSAGE="${HTML_MESSAGE}</tr>${NL}"            
-        done
-} 
 
 function add_info_to_mail
 {
