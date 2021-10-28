@@ -554,7 +554,7 @@ function html_body
         
         #DEBUG
         if [ "${DEBUG_EMAIL_TABLE}" = "1" ]; then
-        	MSG="${MSG}<style type=\"text/css\">${NL}"
+          MSG="${MSG}<style type=\"text/css\">${NL}"
           MSG="${MSG}TABLE{border-style:solid;border-width:1px;border-color:#996;border-collapse:collapse;border-spacing:0;empty-cells:show}${NL}"
           MSG="${MSG}</style>${NL}"
         fi
@@ -589,7 +589,7 @@ function html_table_footer
 #
 #       -----------------------------------------------------------------------    
 
-				local SECTION=`bt_search_section "<!--HTML_TABLE_FOOTER-->"`
+        local SECTION=`bt_search_section "<!--HTML_TABLE_FOOTER-->"`
         local START_SECTION=`echo ${SECTION} | awk -F";" {'print $1'}`
         local END_SECTION=`boiler_template | wc -l | awk {'print $1'}`           
         local INT_MSG=`boiler_template | awk NR==${START_SECTION},NR==${END_SECTION}`
