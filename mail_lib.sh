@@ -31,7 +31,8 @@
 #       -------------------------------------------------------------------
 
         BOUNDARY=123456 #Comment the below line if the /dev/urandom is not available on your system.
-        BOUNDARY=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w ${1:-8} | head -n 1`
+        BOUNDARY=`echo $RANDOM | md5sum | head -c 8; echo;`
+        #BOUNDARY=`cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w ${1:-8} | head -n 1`
         NL=$'\n'
         
         # Change this color depending on your flavours ...
@@ -105,7 +106,14 @@ function init_email
           fi
           INT_TAG_EMAIL_COUNTER=0
           if [ -f "${KEEP_MAIL_FILE}" ]; then
-            cat "${KEEP_MAIL_FILE}" > "${INT_EMAIL_TMP}"
+            local SIZE_FILE=`stat -c%s "${KEEP_MAIL_FILE}" 2>/dev/null`
+  	        SIZE_FILE=`expr $SIZE_FILE + 0`
+          else
+  	         local SIZE_FILE="0"
+          fi
+          if [ "${SIZE_FILE}" -gt "0" ]; then	
+          	
+            cat "${KEEP_MAIL_FILE}" >> "${INT_EMAIL_TMP}"
             search_section
             for i in ${INT_MAIL_SECTION}
             do
@@ -481,7 +489,7 @@ function html_table_header
         if [ "${INT_COUNT}" = "1" ]; then
             HTML_TITLE=`unique_match_specific_section title`
         else
-            HTML_TITLE="\&nbsp;"
+           HTML_TITLE=`unique_match_specific_section title 1`
         fi
         INT_MSG=`echo "${INT_MSG}" | sed "s~HTML_TITLE_VAR~${HTML_TITLE}~g"`
         MSG="${MSG}${NL}"
@@ -860,7 +868,8 @@ function unique_match_specific_section
 #       -----------------------------------------------------------------------       
   
         INT_TYPE_SEARCH="${1}"
-        INT_SP_FOUND=""
+        INT_STOP="${2}"
+        INT_SP_FOUND="0"
         
         for i in ${INT_MAIL_SECTION}
         do
@@ -869,8 +878,17 @@ function unique_match_specific_section
           INT_SP_MAIL_SECTION=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
           INT_TYPE_SECTION=`echo "${INT_SP_MAIL_SECTION}" | head -n1 | awk  {'for(i=1; i<=NF; i++) {if( $i ~ /type/) print $i}'} | awk -F":" {'print $2'}`
           if [ "${INT_TYPE_SECTION}" = "${INT_TYPE_SEARCH}" ]; then
-            INT_START_LINE=$((INT_START_LINE+1))
-            INT_SP_FOUND=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
+          	INT_SP_FOUND=$((INT_SP_FOUND+1))
+          	if [ "${INT_STOP}" = "" ]; then
+            	INT_START_LINE=$((INT_START_LINE+1))
+            	INT_SP_FOUND=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
+          	else
+          		if [ "${INT_SP_FOUND}" = "${INT_STOP}" ]; then
+          			INT_START_LINE=$((INT_START_LINE+1))
+            	  INT_SP_FOUND=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
+          			break
+          		fi
+            fi 
           fi
         done
         echo "${INT_SP_FOUND}"  
@@ -904,7 +922,8 @@ function sort_section_type_html
             INT_HTML_MAIL_TMP="${INT_HTML_MAIL_TMP}${INT_TYPE_SECTION_NUMBER} ${i}${NL}"
           fi
         done
-        INT_HTML_MAIL=`echo "${INT_HTML_MAIL_TMP}" | sed '/^$/d' | sort -nk 1 | awk {'print $NF'}`  
+        #INT_HTML_MAIL=`echo "${INT_HTML_MAIL_TMP}" | sed '/^$/d' | sort -nk 1 | awk {'print $NF'}`  
+        INT_HTML_MAIL=`echo "${INT_HTML_MAIL_TMP}" | sed '/^$/d' | awk {'print $NF'}`  
 }   
 
 
@@ -987,6 +1006,15 @@ function html_email
          if [ "${KEEP_MAIL}" = "1" ]; then
            cat ${INT_EMAIL_TMP} >> "${KEEP_MAIL_FILE}"
          else
+           if [ -f "${KEEP_MAIL_FILE}" ]; then
+  			     local SIZE_FILE=`stat -c%s "${KEEP_MAIL_FILE}" 2>/dev/null`
+  	         SIZE_FILE=`expr $SIZE_FILE + 0`
+           else
+  	         local SIZE_FILE="0"
+           fi
+           if [ "${SIZE_FILE}" -gt "0" ]; then
+             cat ${KEEP_MAIL_FILE} >> ${INT_EMAIL_TMP}
+           fi
            search_section
            mime_header
            mime_add_icon
@@ -1202,13 +1230,73 @@ cat <<- -EOF_HTML-
   
 }
 
+function lock_dir_email
+{
+
+#       -----------------------------------------------------------------------
+#       Function for locking write on the email_dat file using directory creation
+#         1 Argument
+#       Tag for referencing the schedule
+#       -----------------------------------------------------------------------
+
+        INT_MAIL_LOCKDIR="${HOME}/mail_lock_dir"
+        INT_PID_MAIL_LOCK="${INT_MAIL_LOCKDIR}/PID"
+        local PARENT_INT_MAIL_LOCKDIR=`echo ${INT_MAIL_LOCKDIR} | awk -F"/" {'k="";for (j=2; j<NF; j++) {k=k"/"$j} print k'}`
+        local INT_LOCK_SUCCESS=0
+        local INT_MAIL_COUNTER=0
+        
+        if [ -w "${PARENT_INT_MAIL_LOCKDIR}" ]; then
+          while true
+          do  
+            if [ $(mkdir -m a=rwx ${INT_MAIL_LOCKDIR} 2>/dev/null; echo $?) = "0" ]; then
+              echo "$$" >"${INT_PID_MAIL_LOCK}"   
+              chmod 666 ${INT_PID_MAIL_LOCK}
+              INT_LOCK_SUCCESS=1
+              break
+            else
+              INT_OTHERPID=`cat "${INT_PID_MAIL_LOCK}" 2>/dev/null`
+              GREP_STRING='^'${INT_OTHERPID}'$'
+              INT_MAIL_RUNNING=`ps -eo pid | sed 's/ //g' | grep "${GREP_STRING}"`
+              if [ "${INT_MAIL_RUNNING}" = "" ];  then
+                rm -rf  ${INT_MAIL_LOCKDIR}
+              fi 
+              INT_MAIL_COUNTER=`echo "${INT_MAIL_COUNTER} + 1" | bc `
+              if [ "${INT_MAIL_COUNTER}" -ge "100" ]; then
+                    break
+              fi
+            fi
+          done
+          if [ "${INT_LOCK_SUCCESS}" = "1" ]; then
+            return 0
+          else
+            return 1
+          fi
+        else
+          echo "Unable to write" >/dev/null
+          return 1
+        fi
+}
+
+function unlock_dir_email
+{
+
+#       -----------------------------------------------------------------------
+#       Function for locking write on the email_dat file using directory creation
+#       No Arguments
+#
+#       -----------------------------------------------------------------------
+
+        INT_MAIL_LOCKDIR=/var/lock/mail_lock_dir 
+        rm -rf  ${INT_MAIL_LOCKDIR}
+}
+
 #        -------------------------------------------------------------------
 #        Program starts here
 #        -------------------------------------------------------------------
 
   
 if [ ! -f "/usr/bin/which" ]; then
-    echo "Please, check the binary variable for this script as which as not been found ..."
+    echo "Please, check the binary variable for this script as which has not been found ..."
     BIN_WHICH=""
     exit 1
 else
@@ -1225,4 +1313,6 @@ if [ "${TEMP_DIR}" = "" ]; then
     else
         TEMP_DIR=/tmp
     fi
-fi    
+fi
+
+#trap "unlock_dir_email" EXIT    
