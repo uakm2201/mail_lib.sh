@@ -107,12 +107,12 @@ function init_email
           INT_TAG_EMAIL_COUNTER=0
           if [ -f "${KEEP_MAIL_FILE}" ]; then
             local SIZE_FILE=`stat -c%s "${KEEP_MAIL_FILE}" 2>/dev/null`
-  	        SIZE_FILE=`expr $SIZE_FILE + 0`
+            SIZE_FILE=`expr $SIZE_FILE + 0`
           else
-  	         local SIZE_FILE="0"
+             local SIZE_FILE="0"
           fi
-          if [ "${SIZE_FILE}" -gt "0" ]; then	
-          	
+          if [ "${SIZE_FILE}" -gt "0" ]; then 
+            
             cat "${KEEP_MAIL_FILE}" >> "${INT_EMAIL_TMP}"
             search_section
             for i in ${INT_MAIL_SECTION}
@@ -878,16 +878,16 @@ function unique_match_specific_section
           INT_SP_MAIL_SECTION=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
           INT_TYPE_SECTION=`echo "${INT_SP_MAIL_SECTION}" | head -n1 | awk  {'for(i=1; i<=NF; i++) {if( $i ~ /type/) print $i}'} | awk -F":" {'print $2'}`
           if [ "${INT_TYPE_SECTION}" = "${INT_TYPE_SEARCH}" ]; then
-          	INT_SP_FOUND=$((INT_SP_FOUND+1))
-          	if [ "${INT_STOP}" = "" ]; then
-            	INT_START_LINE=$((INT_START_LINE+1))
-            	INT_SP_FOUND=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
-          	else
-          		if [ "${INT_SP_FOUND}" = "${INT_STOP}" ]; then
-          			INT_START_LINE=$((INT_START_LINE+1))
-            	  INT_SP_FOUND=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
-          			break
-          		fi
+            INT_SP_FOUND=$((INT_SP_FOUND+1))
+            if [ "${INT_STOP}" = "" ]; then
+              INT_START_LINE=$((INT_START_LINE+1))
+              INT_SP_FOUND=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
+            else
+              if [ "${INT_SP_FOUND}" = "${INT_STOP}" ]; then
+                INT_START_LINE=$((INT_START_LINE+1))
+                INT_SP_FOUND=`awk NR==${INT_START_LINE},NR==${INT_END_LINE} ${INT_EMAIL_TMP}`
+                break
+              fi
             fi 
           fi
         done
@@ -1007,10 +1007,10 @@ function html_email
            cat ${INT_EMAIL_TMP} >> "${KEEP_MAIL_FILE}"
          else
            if [ -f "${KEEP_MAIL_FILE}" ]; then
-  			     local SIZE_FILE=`stat -c%s "${KEEP_MAIL_FILE}" 2>/dev/null`
-  	         SIZE_FILE=`expr $SIZE_FILE + 0`
+             local SIZE_FILE=`stat -c%s "${KEEP_MAIL_FILE}" 2>/dev/null`
+             SIZE_FILE=`expr $SIZE_FILE + 0`
            else
-  	         local SIZE_FILE="0"
+             local SIZE_FILE="0"
            fi
            if [ "${SIZE_FILE}" -gt "0" ]; then
              cat ${KEEP_MAIL_FILE} >> ${INT_EMAIL_TMP}
